@@ -1,0 +1,2653 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="app-version" content="2026.10.03-10">
+<title>Генератор рекламных роликов</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;800;900&display=swap&subset=cyrillic" rel="stylesheet">
+<style>
+  :root { --accent:#ff2d55; --bg:#f4f4f6; --card:#fff; --text:#111; --muted:#6b6b72; --line:#e2e2e8; --ok:#2f9e44; --warn:#f08c00; --bad:#c92a2a; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:Montserrat,system-ui,sans-serif; background:var(--bg); color:var(--text); }
+  header { text-align:center; padding:40px 16px 8px; }
+  h1 { font-size:clamp(26px,5vw,44px); margin:0 0 8px; font-weight:900; letter-spacing:-.5px; }
+  h1 span { color:var(--accent); }
+  .lead { color:var(--muted); margin:0 auto; max-width:640px; line-height:1.5; }
+  .ver { font-size:11px; color:var(--muted); margin-top:6px; }
+  .tabs { display:inline-flex; gap:6px; background:#e7e7ec; padding:5px; border-radius:999px; margin-top:20px; }
+  .tab { background:transparent; color:#333; padding:10px 18px; font-size:14px; }
+  .tab.on { background:#111; color:#fff; }
+  .wrap { max-width:980px; margin:0 auto; padding:0 16px 60px; }
+  .panel { margin:20px 0; padding:22px 18px; background:var(--card); border-radius:24px; box-shadow:0 2px 14px rgba(0,0,0,.06); }
+  .panel h2 { margin:0 0 4px; font-size:21px; font-weight:900; display:flex; align-items:center; gap:10px; }
+  .panel h2 .step { background:var(--accent); color:#fff; border-radius:999px; width:30px; height:30px; display:inline-flex; align-items:center; justify-content:center; font-size:15px; flex:0 0 30px; }
+  .sub { color:var(--muted); font-size:13px; margin:0 0 16px; line-height:1.5; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
+  .grow { flex:1 1 220px; min-width:0; }
+  label.small { display:block; font-size:13px; font-weight:700; margin:0 0 6px 6px; color:var(--muted); }
+  input, select, textarea { font:inherit; font-size:15px; padding:13px 15px; border:2px solid var(--line); border-radius:16px; background:#fff; color:var(--text); width:100%; }
+  textarea { min-height:64px; resize:vertical; }
+  input:focus, select:focus, textarea:focus { outline:none; border-color:var(--accent); }
+  .keyrow { display:flex; gap:8px; align-items:center; }
+  .keyrow input, .keyrow select { flex:1; min-width:0; }
+  .check { display:flex; gap:8px; align-items:center; font-size:13px; color:var(--muted); margin:8px 0 0 6px; cursor:pointer; }
+  .check input { width:auto; accent-color:var(--accent); }
+  .hint { font-size:12px; color:var(--muted); margin:6px 0 0 6px; line-height:1.45; }
+  .hint a { color:var(--accent); }
+  button { font:inherit; cursor:pointer; border:0; border-radius:999px; font-weight:700; }
+  button:disabled { opacity:.55; cursor:wait; }
+  .big { width:100%; padding:16px; font-size:17px; margin-top:14px; color:#fff; background:var(--accent); }
+  .big.dark { background:#111; }
+  .ghost { background:#ececf1; color:#111; padding:12px 16px; font-size:13px; white-space:nowrap; }
+  .status { text-align:center; color:var(--muted); font-size:14px; margin-top:10px; min-height:20px; line-height:1.5; }
+  .cost { text-align:center; font-size:13px; color:var(--muted); margin-top:10px; }
+  .cost b { color:var(--text); }
+  .err { color:var(--bad); }
+  .spinner { display:inline-block; width:15px; height:15px; border:3px solid #ccc; border-top-color:var(--accent); border-radius:50%; animation:s 1s linear infinite; vertical-align:middle; margin-right:8px; }
+  @keyframes s { to { transform:rotate(360deg); } }
+  .bar { height:8px; background:#e7e7ec; border-radius:99px; overflow:hidden; margin-top:10px; display:none; }
+  .bar i { display:block; height:100%; width:0; background:var(--accent); transition:width .2s; }
+
+  .plats { display:flex; gap:8px; flex-wrap:wrap; }
+  .plats label { display:flex; align-items:center; gap:8px; padding:10px 14px; border:2px solid var(--line); border-radius:999px; font-size:14px; font-weight:700; cursor:pointer; }
+  .plats input { width:auto; accent-color:var(--accent); }
+
+  .board { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:12px; margin-top:16px; }
+  .scene { background:var(--bg); border-radius:18px; padding:10px; font-size:12px; }
+  .scene .pic { position:relative; aspect-ratio:9/16; border-radius:12px; overflow:hidden; background:#ddd; }
+  .scene .pic img, .scene .pic video { width:100%; height:100%; object-fit:cover; display:block; }
+  .scene .pic .num { position:absolute; top:8px; left:8px; background:rgba(0,0,0,.65); color:#fff; font-weight:900; border-radius:999px; padding:3px 10px; }
+  .scene .pic .tag { position:absolute; top:8px; right:8px; background:var(--accent); color:#fff; font-weight:800; border-radius:999px; padding:3px 9px; font-size:11px; }
+  .scene .pic .busy { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.72); font-weight:700; text-align:center; padding:10px; }
+  .scene label.small { margin:8px 0 4px 4px; font-size:11px; }
+  .scene input, .scene textarea { font-size:13px; padding:9px 11px; border-radius:12px; }
+  .scene textarea { min-height:60px; }
+  .scene .btns { display:flex; gap:6px; margin-top:8px; }
+  .scene .btns button, .scene .btns label { flex:1; padding:9px 6px; font-size:12px; background:#e3e3e9; color:#111; border-radius:999px; text-align:center; font-weight:700; cursor:pointer; }
+  .uk { margin:6px 2px 0; padding:8px 10px; background:#fff8db; border-radius:10px; font-size:12px; line-height:1.45; color:#5c4a00; }
+  .uk .ukflag { margin-right:4px; }
+  .uk .ukbtn { display:block; margin-top:6px; padding:6px 10px; font-size:11px; background:#ffe680; color:#5c4a00; border-radius:999px; }
+  .scene .pic .qc { position:absolute; bottom:8px; left:8px; background:rgba(0,0,0,.65); color:#fff; font-weight:800; border-radius:999px; padding:3px 9px; font-size:11px; }
+  .scene .pic .qc.ok { background:rgba(47,158,68,.9); }
+  .scene .pic .qc.warn { background:rgba(240,140,0,.95); }
+  .qcnotes { margin:8px 2px 0; padding:8px 10px; background:#fff1e0; color:#8a4b00; border-radius:10px; font-size:12px; line-height:1.4; }
+  .scene details { margin-top:6px; } .scene summary { cursor:pointer; color:var(--muted); font-weight:700; }
+
+  .prodbox { margin-top:14px; border:2px dashed var(--line); border-radius:18px; padding:12px 14px; }
+  .prodbox b { font-size:14px; }
+  .appinfo { display:flex; align-items:center; gap:10px; margin-top:8px; flex-wrap:wrap; font-size:13px; }
+  .appinfo:empty { display:none; }
+  .appinfo .appicon { width:52px; height:52px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,.15); }
+  .appinfo small { color:var(--muted); }
+  .prodgrid { display:grid; grid-template-columns:repeat(auto-fill,minmax(84px,1fr)); gap:8px; margin-top:10px; }
+  .prod { position:relative; aspect-ratio:1; border-radius:12px; overflow:hidden; background:#eee; cursor:pointer; border:3px solid transparent; }
+  .prod.on { border-color:var(--accent); }
+  .prod.broken { display:none; }
+  .prod img { width:100%; height:100%; object-fit:cover; display:block; }
+  .prod .chk { position:absolute; top:4px; left:4px; width:22px; height:22px; border-radius:50%; background:rgba(255,255,255,.9); color:var(--accent); font-weight:900; display:flex; align-items:center; justify-content:center; font-size:13px; }
+  .prod.on .chk { background:var(--accent); color:#fff; }
+  .prod .plabel { position:absolute; left:0; right:0; bottom:0; background:rgba(0,0,0,.62); color:#fff; font-size:9px; font-weight:700; padding:3px 4px; line-height:1.2; }
+  .prod .del { position:absolute; top:3px; right:3px; width:22px; height:22px; padding:0; border-radius:50%; background:rgba(0,0,0,.55); color:#fff; font-size:14px; line-height:1; }
+  h3.bh { font-size:16px; margin:20px 0 4px; }
+  .projects { margin:20px 0 0; }
+  .projects summary { cursor:pointer; font-weight:800; font-size:15px; padding:14px 18px; background:var(--card); border-radius:18px; box-shadow:0 2px 14px rgba(0,0,0,.06); list-style:none; display:flex; justify-content:space-between; align-items:center; }
+  .projects summary::-webkit-details-marker { display:none; }
+  .projects[open] summary { border-radius:18px 18px 0 0; }
+  .projlist { background:var(--card); border-radius:0 0 18px 18px; padding:6px 18px 14px; box-shadow:0 6px 14px rgba(0,0,0,.05); }
+  .proj { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--line); }
+  .proj:last-child { border:0; }
+  .proj img { width:44px; height:78px; object-fit:cover; border-radius:8px; background:#ddd; flex:0 0 44px; }
+  .proj .meta { flex:1; min-width:0; font-size:13px; }
+  .proj .meta b { display:block; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .proj .meta span { color:var(--muted); }
+  .proj button { padding:9px 14px; font-size:12px; background:#ececf1; color:#111; }
+  .modes { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:6px; }
+  .modes button { background:var(--bg); border:2px solid var(--line); border-radius:18px; padding:12px 8px; color:var(--text); display:flex; flex-direction:column; align-items:center; gap:2px; font-weight:700; }
+  .modes button .mi { font-size:24px; }
+  .modes button small { font-weight:500; color:var(--muted); font-size:11px; }
+  .modes button.on { border-color:var(--accent); background:#fff0f3; }
+  .brandgrid { display:grid; grid-template-columns:1fr auto; gap:18px; align-items:start; }
+  @media (max-width:760px) { .brandgrid { grid-template-columns:1fr; } }
+  .blogo { height:46px; max-width:140px; object-fit:contain; background:repeating-conic-gradient(#eee 0 25%, #fff 0 50%) 50%/12px 12px; border-radius:8px; padding:4px; }
+  .colors { display:grid; grid-template-columns:repeat(auto-fill,minmax(118px,1fr)); gap:8px; }
+  .colors label { font-size:12px; font-weight:700; background:var(--bg); border-radius:12px; padding:8px; cursor:pointer; line-height:1.3; }
+  .colors small { font-weight:500; color:var(--muted); }
+  .colors input { width:100%; height:34px; padding:0; border:0; border-radius:8px; background:none; cursor:pointer; margin-bottom:4px; }
+  .bprev { display:flex; gap:10px; }
+  .bprev div { text-align:center; } .bprev small { color:var(--muted); font-size:11px; }
+  .bprev canvas, #coverPrev { width:150px; height:267px; border-radius:14px; background:#222; display:block; margin-bottom:4px; }
+  #bReset { margin-top:12px; }
+  .coverbox { border:2px dashed var(--line); border-radius:18px; padding:12px 14px; margin-bottom:14px; }
+  .coverrow { display:flex; gap:16px; flex-wrap:wrap; margin-top:10px; }
+  #coverPrev { width:180px; height:320px; }
+  #vresult { display:none; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:14px; margin-top:16px; }
+  .vcard { background:var(--bg); border-radius:18px; padding:12px; text-align:center; }
+  .vcard video { width:100%; aspect-ratio:9/16; border-radius:14px; background:#000; }
+  .vtitle { font-weight:900; margin-bottom:8px; }
+  .vcap { font-size:12px; color:var(--muted); text-align:left; margin:8px 2px 0; line-height:1.45; word-break:break-word; }
+  .actions { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin-top:10px; }
+  .actions a, .actions button { font-size:12px; padding:9px 13px; border-radius:999px; text-decoration:none; background:#e3e3e9; color:#111; font-weight:700; }
+  .actions a.dl { background:var(--accent); color:#fff; }
+
+  #tab-guide { display:none; }
+  #tab-guide h2.g { font-size:26px; font-weight:900; margin:34px 0 6px; }
+  #tab-guide h2.g small { display:block; font-size:14px; font-weight:500; color:var(--muted); margin-top:4px; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; margin-top:16px; }
+  .card { background:var(--card); border-radius:20px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,.05); font-size:14px; line-height:1.55; }
+  .card h3 { margin:0 0 8px; font-size:16px; }
+  .card .n { display:inline-block; background:var(--accent); color:#fff; border-radius:999px; font-size:12px; font-weight:900; padding:2px 9px; margin-right:6px; }
+  .card ul { margin:6px 0 0; padding-left:18px; } .card li { margin-bottom:4px; }
+  .card.warn { border-left:5px solid var(--warn); } .card.bad { border-left:5px solid var(--bad); } .card.good { border-left:5px solid var(--ok); }
+  .plan { background:var(--card); border-radius:20px; padding:6px 18px; margin-top:16px; box-shadow:0 2px 10px rgba(0,0,0,.05); }
+  .plan div { display:flex; gap:14px; padding:14px 0; border-bottom:1px solid var(--line); font-size:14px; line-height:1.5; }
+  .plan div:last-child { border:0; }
+  .plan b.d { flex:0 0 96px; color:var(--accent); }
+  .about { background:#111; color:#fff; border-radius:24px; padding:24px; margin-top:24px; line-height:1.6; font-size:15px; }
+  .about h2 { margin:0 0 6px; font-size:24px; }
+  .login { position:fixed; inset:0; background:rgba(17,17,20,.72); backdrop-filter:blur(6px); z-index:50; display:flex; align-items:center; justify-content:center; padding:16px; }
+  .lcard { background:var(--card); border-radius:24px; padding:26px 22px; width:100%; max-width:380px; box-shadow:0 20px 60px rgba(0,0,0,.3); }
+  .lcard h2 { margin:0 0 6px; font-size:24px; }
+  #logout { position:absolute; top:14px; right:16px; font-size:12px; padding:8px 12px; }
+  header { position:relative; }
+  .about ol { padding-left:20px; margin:10px 0 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Генератор <span>рекламных роликов</span></h1>
+  <p class="lead">Вставьте ссылку на сайт — нейросеть напишет рекламный сценарий, нарисует сцены по смыслу, озвучит и смонтирует ролики для TikTok, Instagram Reels и YouTube Shorts.</p>
+  <button class="ghost" type="button" id="logout" style="display:none">Выйти</button>
+  <div class="ver">версия 2026.10.03-10</div>
+  <nav class="tabs">
+    <button type="button" class="tab on" data-tab="make">🎬 Создать ролик</button>
+    <button type="button" class="tab" data-tab="guide">📖 Как получать трафик</button>
+  </nav>
+</header>
+
+<div id="login" class="login" style="display:none">
+  <form class="lcard" id="loginForm">
+    <h2>🔒 Вход</h2>
+    <p class="sub">Введите пароль, чтобы создавать ролики.</p>
+    <input id="loginPass" type="password" placeholder="Пароль" autocomplete="current-password">
+    <button class="big" type="submit" id="loginBtn">Войти</button>
+    <div class="status" id="loginErr"></div>
+  </form>
+</div>
+<div class="wrap">
+<div id="tab-make">
+
+<details class="projects" id="projBox">
+  <summary><span>📁 Мои проекты <span id="projCount" style="color:var(--muted);font-weight:600"></span></span><span id="saveState" style="color:var(--muted);font-weight:600;font-size:12px"></span></summary>
+  <div class="projlist">
+    <div id="projList"></div>
+    <button class="ghost" type="button" id="newProj" style="margin-top:10px">＋ Новый проект</button>
+    <div class="hint">Проекты сохраняются автоматически в этом браузере: сценарий, картинки, оживлённые сцены и фото товара. Ключ fal в проекты не сохраняется.</div>
+  </div>
+</details>
+
+<div class="panel">
+  <h2><span class="step">1</span><span id="step1Title">Сайт и ключ</span></h2>
+  <div id="keyBox">
+  <p class="sub">Ключ берётся на <a href="https://fal.ai/dashboard/keys" target="_blank" rel="noopener" style="color:var(--accent)">fal.ai/dashboard/keys</a>. Он хранится только у вас в браузере и отправляется только на fal.ai.</p>
+  <label class="small">Ключ fal.ai</label>
+  <div class="keyrow">
+    <input id="key" type="password" placeholder="xxxxxxxx-xxxx-…:xxxxxxxx" autocomplete="off">
+    <button class="ghost" type="button" id="eye">👁</button>
+  </div>
+  <label class="check"><input type="checkbox" id="remember"> Запомнить ключ в этом браузере</label>
+  <div style="height:14px"></div>
+  </div>
+  <label class="small">Что рекламируем</label>
+  <input type="hidden" id="mode" value="product">
+  <div class="modes">
+    <button type="button" data-mode="app"><span class="mi">📱</span><b>Приложение</b><small>скачивания и установки</small></button>
+    <button type="button" data-mode="product" class="on"><span class="mi">📦</span><b>Товар</b><small>продажи в магазине</small></button>
+    <button type="button" data-mode="service"><span class="mi">🛠</span><b>Услуга</b><small>заявки и записи</small></button>
+  </div>
+  <div class="hint" id="modeHint" style="margin-bottom:14px"></div>
+  <div class="row">
+    <div class="grow" style="flex-basis:420px"><label class="small" id="urlLabel">Ссылка на сайт, товар или статью</label>
+      <input id="url" type="text" placeholder="https://вашсайт.com/товар"></div>
+    <div class="grow" style="flex:0 1 180px"><label class="small">Язык ролика</label>
+      <select id="lang">
+        <option value="Russian">Русский</option><option value="English">English</option>
+        <option value="Spanish">Español</option><option value="German">Deutsch</option>
+        <option value="Ukrainian">Українська</option>
+      </select></div>
+  </div>
+  <div class="row">
+    <div class="grow"><label class="small" id="focusLabel">Что рекламируем (необязательно)</label>
+      <input id="adFocus" type="text" placeholder="Например: скидка 20% на первый заказ"></div>
+    <div class="grow"><label class="small">Для кого (необязательно)</label>
+      <input id="audience" type="text" placeholder="Например: занятые мамы 25–40 лет"></div>
+  </div>
+  <label class="small">О чём сайт (необязательно, поможет, если сайт не читается)</label>
+  <textarea id="about" placeholder="Например: интернет-магазин свечей ручной работы, доставка по Европе"></textarea>
+  <div class="prodbox">
+    <div class="keyrow" style="justify-content:space-between;flex-wrap:wrap">
+      <b id="prodTitle">📦 Фото товара — чтобы в ролике был ваш настоящий товар</b>
+      <span style="display:flex;gap:6px">
+        <button class="ghost" type="button" id="findProd">🔎 Найти на сайте</button>
+        <label class="ghost" style="cursor:pointer">📁 Загрузить свои<input type="file" id="prodFiles" accept="image/*" multiple style="display:none"></label>
+      </span>
+    </div>
+    <div class="hint" id="prodInfo">Необязательно. Фото найдутся на сайте автоматически при написании сценария, или загрузите свои (лучше всего — товар на светлом фоне).</div>
+    <div id="appRow" style="display:none;margin-top:10px">
+      <div class="keyrow">
+        <input id="storeUrl" type="text" placeholder="Ссылка на App Store или Google Play">
+        <button class="ghost" type="button" id="appShots" style="padding:14px 16px">📲 Взять скриншоты из магазина</button>
+      </div>
+      <div class="hint" id="appStatus">Скриншоты, иконка, название и описание приложения подтянутся сами. Описание из магазина нейросеть тоже учтёт в сценарии.</div>
+      <div class="appinfo" id="appInfoBox"></div>
+    </div>
+    <div class="prodgrid" id="prodGrid"></div>
+  </div>
+</div>
+
+<div class="panel">
+  <h2><span class="step">2</span>Сценарий и картинки</h2>
+  <p class="sub">Нейросеть пишет сценарий по сайту, а для каждой сцены рисует свою картинку — ровно то, о чём говорится в этот момент.</p>
+  <div class="row">
+    <div class="grow"><label class="small">Схема ролика</label>
+      <select id="adFormat"><option value="problem">Проблема → решение</option></select></div>
+    <div class="grow"><label class="small">Подача голоса</label>
+      <select id="delivery">
+        <option value="blogger" selected>Живая, как блогер</option>
+        <option value="announcer">Уверенный диктор</option>
+        <option value="calm">Спокойная, доверительная</option>
+        <option value="energetic">Энергичная реклама</option>
+      </select></div>
+    <div class="grow"><label class="small">Длина</label>
+      <select id="adLen">
+        <option value="5">~15 сек (5 сцен)</option>
+        <option value="7" selected>~25 сек (7 сцен)</option>
+        <option value="9">~35 сек (9 сцен)</option>
+      </select></div>
+    <div class="grow"><label class="small">Стиль картинок</label>
+      <select id="adStyle">
+        <option value="photo">Рекламное фото</option>
+        <option value="cinema">Кино, драматичный свет</option>
+        <option value="ugc">Снято на телефон (UGC)</option>
+        <option value="product">Студийная съёмка товара</option>
+        <option value="3d">3D-рендер</option>
+        <option value="illustration">Яркая иллюстрация</option>
+      </select></div>
+  </div>
+  <div class="row">
+    <div class="grow"><label class="small">Модель для сцен</label>
+      <select id="imgModel">
+        <option value="gpt2-medium" selected>GPT Image 2 — отличное качество</option>
+        <option value="gpt2-high">GPT Image 2 (high) — максимум деталей</option>
+        <option value="flux-pro">FLUX 1.1 Pro — фотореализм</option>
+        <option value="flux-dev">FLUX dev — хорошо и недорого</option>
+        <option value="flux-schnell">FLUX schnell — быстрый черновик</option>
+      </select></div>
+    <div class="grow"><label class="small">Оживить сцены (настоящее видео вместо фото)</label>
+      <select id="animModel">
+        <option value="off">Нет — плавное движение камеры</option>
+        <option value="hailuo512">Hailuo 02 — недорого</option>
+        <option value="hailuo768">Hailuo 02 — лучше качество</option>
+        <option value="kling">Kling 2.5 Turbo Pro — кинематографично</option>
+      </select></div>
+  </div>
+  <label class="check"><input type="checkbox" id="useQC" checked> 🔍 Автопроверка картинок — нейросеть со «зрением» ищет брак (лишние пальцы, надписи, не тот смысл) и сама перерисовывает</label>
+  <label class="check"><input type="checkbox" id="useHooks" checked> 🎣 Сразу 3 варианта начала (хука) — для теста, какой лучше удерживает зрителя</label>
+  <div class="hint" id="modelHint"></div>
+  <button class="big" id="mkScript">✍️ Написать сценарий и нарисовать сцены</button>
+  <div class="status" id="sstatus"></div>
+  <div id="hooksBox" style="display:none">
+    <h3 class="bh">🎣 Варианты начала (хуки)</h3>
+    <div class="hint" style="margin:0 0 4px">Первые 2 секунды решают, досмотрят ли ролик. Для каждого хука соберётся своя версия видео — публикуйте все и оставьте ту, что лучше досматривают.</div>
+    <div class="board" id="hookBoard" style="margin-top:8px"></div>
+    <h3 class="bh">🎞 Остальные сцены</h3>
+  </div>
+  <div class="board" id="board"></div>
+</div>
+
+<div class="panel">
+  <h2><span class="step">3</span>Голос и музыка</h2>
+  <p class="sub">Послушайте голос до сборки. Лучше всего звучит ElevenLabs v3: его трудно отличить от живого диктора.</p>
+  <div class="row">
+    <div class="grow"><label class="small">Озвучка</label>
+      <select id="engine">
+        <option value="el3" selected>ElevenLabs v3 — как живой человек (≈$0.05 за ролик)</option>
+        <option value="el2">ElevenLabs Multilingual v2 — ровный студийный голос</option>
+        <option value="mm28">MiniMax Speech 2.8 HD — родные голоса языка</option>
+        <option value="mm02">MiniMax Turbo — дёшево, можно свой голос</option>
+      </select></div>
+  </div>
+  <div class="row">
+    <div class="grow"><label class="small">Голос</label>
+      <div class="keyrow">
+        <select id="voice"></select>
+        <button class="ghost" type="button" id="preview" style="padding:15px 18px">▶ Послушать</button>
+      </div>
+      <div class="hint" id="voiceHint"></div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="grow" id="paceBox"><label class="small">Темп</label>
+      <select id="pace">
+        <option value="1.2">Очень быстрый</option>
+        <option value="1.1" selected>Быстрый (как в TikTok)</option>
+        <option value="1">Обычный</option>
+        <option value="0.9">Медленный</option>
+      </select></div>
+    <div class="grow" id="pitchBox"><label class="small">Тон голоса</label>
+      <select id="pitch">
+        <option value="0" selected>Как есть</option>
+        <option value="2">Выше</option>
+        <option value="-2">Ниже</option>
+      </select></div>
+  </div>
+<div id="clonebox" style="display:none;border:2px dashed var(--line);border-radius:18px;padding:14px;margin-bottom:12px">
+    <b style="font-size:15px">🎙 Свой голос</b>
+    <div class="hint" style="margin:4px 0 12px">Загрузите или запишите 15–60 секунд чистой речи без музыки. Нейросеть сделает копию голоса, и он появится в списке «Мои голоса». Стоимость — около $1.5 с баланса fal. Используйте новый голос хотя бы раз в течение 7 дней, иначе fal его удалит.</div>
+    <label class="small">Название голоса</label>
+    <input id="cloneName" type="text" placeholder="Например: Мой голос">
+    <div class="row" style="margin-top:10px">
+      <label class="ghost" style="border-radius:999px;cursor:pointer;flex:1;text-align:center">📁 Выбрать аудиофайл<input id="cloneFile" type="file" accept="audio/*,video/*" style="display:none"></label>
+      <button class="ghost" type="button" id="recBtn" style="flex:1">⏺ Записать с микрофона</button>
+    </div>
+    <audio id="cloneAudio" controls style="width:100%;display:none;margin-bottom:10px"></audio>
+    <button type="button" id="cloneBtn" style="width:100%;padding:14px;background:var(--red);color:#fff">Создать голос</button>
+    <div id="cloneStatus" class="hint" style="text-align:center;font-size:13px;margin-top:8px"></div>
+  </div>
+    <div class="row">
+    <div class="grow"><label class="small">Музыка</label>
+      <select id="music">
+        <option value="cassette" selected>AI-музыка под ролик (CassetteAI)</option>
+        <option value="eleven">AI-музыка премиум (ElevenLabs)</option>
+        <option value="beat">Простой бит (бесплатно)</option>
+        <option value="off">Без музыки</option>
+      </select></div>
+  </div>
+  <label class="check"><input type="checkbox" id="useVoice" checked> Озвучка</label>
+  <label class="check"><input type="checkbox" id="useSubs" checked> Субтитры слово за словом</label>
+  <label class="check"><input type="checkbox" id="useSfx" checked> Звуки переходов</label>
+</div>
+
+<div class="panel" id="brandPanel">
+  <h2><span class="step">4</span>Бренд-кит <span id="bState" style="font-size:12px;font-weight:600;color:var(--muted);margin-left:auto"></span></h2>
+  <p class="sub">Настраивается один раз и применяется ко всем роликам и обложкам. Хранится в этом браузере.</p>
+  <label class="check"><input type="checkbox" id="bOn" checked> Применять бренд-кит</label>
+  <div id="brandBody" class="brandgrid">
+    <div>
+      <div class="row" style="margin-top:10px">
+        <div class="grow"><label class="small">Название бренда (на финальной заставке)</label><input id="bName" type="text" placeholder="Например: CookBook"></div>
+      </div>
+      <label class="small">Логотип (лучше PNG с прозрачным фоном)</label>
+      <div class="keyrow" style="flex-wrap:wrap">
+        <img id="bLogoImg" alt="" class="blogo" style="display:none">
+        <label class="ghost" style="cursor:pointer">📁 Загрузить логотип<input type="file" id="bLogo" accept="image/*" style="display:none"></label>
+        <button class="ghost" type="button" id="bLogoDel" style="display:none">Убрать</button>
+        <select id="bLogoPos" style="flex:1;min-width:160px">
+          <option value="tl">В кадре: верхний левый угол</option>
+          <option value="tr">В кадре: верхний правый угол</option>
+          <option value="outro">Только на финальной заставке</option>
+        </select>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <div class="grow"><label class="small">Шрифт текста в ролике</label>
+          <div class="keyrow"><select id="bFont"></select>
+          <label class="ghost" style="cursor:pointer" title="Файл .ttf, .otf или .woff2">📁 Свой<input type="file" id="bFontFile" accept=".ttf,.otf,.woff,.woff2" style="display:none"></label></div></div>
+      </div>
+      <label class="small">Цвета</label>
+      <div class="colors">
+        <label><input type="color" id="bPrimary"> Основной<br><small>кнопки, заставка</small></label>
+        <label><input type="color" id="bSecondary"> Второй<br><small>фон заставки</small></label>
+        <label><input type="color" id="bHook"> Стикер хука<br><small>первая сцена</small></label>
+        <label><input type="color" id="bSticker"> Стикеры<br><small>остальные сцены</small></label>
+        <label><input type="color" id="bStickerText"> Текст<br><small>на стикерах</small></label>
+        <label><input type="color" id="bHi"> Подсветка<br><small>слова в субтитрах</small></label>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <div class="grow"><label class="small">Финальная заставка</label>
+          <select id="bOutro"><option value="platform">В цветах площадки (TikTok, Instagram, YouTube)</option><option value="brand">В цветах бренда</option></select></div>
+      </div>
+      <button class="ghost" type="button" id="bReset">Сбросить оформление</button>
+    </div>
+    <div class="bprev">
+      <div><canvas id="bPrevScene" width="270" height="480"></canvas><small>кадр сцены</small></div>
+      <div><canvas id="bPrevOutro" width="270" height="480"></canvas><small>финальная заставка</small></div>
+    </div>
+  </div>
+</div>
+
+<div class="panel">
+  <h2><span class="step">5</span>Сборка</h2>
+  <p class="sub">Каждая площадка получит свою версию: свой призыв в конце, своё описание и хештеги.</p>
+  <div class="coverbox" id="coverBox" style="display:none">
+    <b>🖼 Обложка для Reels и Shorts</b>
+    <div class="coverrow">
+      <canvas id="coverPrev" width="270" height="480"></canvas>
+      <div style="flex:1;min-width:220px">
+        <label class="small">Текст на обложке</label>
+        <input id="coverTitle" type="text" placeholder="Крупный заголовок">
+        <div style="height:10px"></div>
+        <label class="small">Фон — картинка сцены</label>
+        <select id="coverScene"></select>
+        <div class="actions" style="justify-content:flex-start">
+          <a class="dl" href="#" id="coverDl" onclick="return false">Скачать обложку</a>
+          <button type="button" id="coverNew">✍️ Другой заголовок</button>
+        </div>
+        <div class="hint" id="coverInfo"></div>
+        <div class="hint">Пунктир — то, что видно в сетке профиля Instagram, поэтому заголовок стоит в центре. Обложку загружайте при публикации: в Reels — «Изменить обложку», в Shorts — выбор обложки в приложении YouTube.</div>
+      </div>
+    </div>
+  </div>
+  <div class="plats">
+    <label><input type="checkbox" data-plat="tiktok" checked> 🎵 TikTok</label>
+    <label><input type="checkbox" data-plat="reels" checked> 📸 Instagram Reels</label>
+    <label><input type="checkbox" data-plat="shorts" checked> ▶️ YouTube Shorts</label>
+  </div>
+  <label class="check" id="hookBuild" style="display:none"><input type="checkbox" id="buildHooks" checked> 🎣 Собрать отдельную версию для каждого хука (A, B, C)</label>
+  <button class="big dark" id="mkVideo" disabled>🎬 Собрать видео</button>
+  <div class="cost" id="cost"></div>
+  <div class="status" id="vstatus">Сначала напишите сценарий и нарисуйте сцены в шаге 2.</div>
+  <div class="bar" id="vbar"><i></i></div>
+  <div id="vresult"></div>
+</div>
+
+</div>
+<div id="tab-guide">
+  <div class="about">
+    <h2>Как это работает</h2>
+    Приложение читает ваш сайт и делает короткий рекламный ролик под вертикальные площадки. Каждая картинка рисуется под смысл фразы, которая звучит в этот момент, поэтому ролик выглядит как настоящая реклама, а не слайд-шоу.
+    <ol>
+      <li>Шаг 1 — ключ fal.ai и ссылка. Поля «Что рекламируем» и «Для кого» делают сценарий точнее. Выберите фото товара (найдутся на сайте или загрузите свои) — тогда в ролике будет ваш настоящий товар.</li>
+      <li>Шаг 2 — выберите схему, длину, стиль и модель. Нажмите «Написать сценарий»: получите раскадровку, где любую сцену можно переписать, перерисовать или заменить своим фото.</li>
+      <li>Шаг 3 — голос (послушайте до сборки) и музыка.</li>
+      <li>Шаг 4 — «Собрать видео». Получите MP4 для TikTok, Reels и Shorts с готовыми описаниями — по версии на каждый хук.</li>
+      <li>Всё сохраняется само в «📁 Мои проекты» — можно вернуться завтра, поправить сцену и пересобрать без повторной генерации.</li>
+    </ol>
+  </div>
+
+  <h2 class="g">Как сделать ролик, который досматривают<small>алгоритмы всех трёх площадок продвигают то, что смотрят до конца</small></h2>
+  <div class="cards">
+    <div class="card good"><h3>Первые 2 секунды решают всё</h3>Если зритель не зацепился, он листает дальше, и ролик перестают показывать. Хук должен называть боль, обещать результат или удивлять. Сделайте 2–3 ролика с разными схемами и оставьте тот, у которого выше досмотр в первые секунды.</div>
+    <div class="card good"><h3>Субтитры обязательны</h3>Многие смотрят без звука. Крупные субтитры слово за словом удерживают взгляд и помогают досмотру — поэтому они включены по умолчанию.</div>
+    <div class="card good"><h3>Короче — лучше</h3>Для холодной аудитории лучше всего работают ролики 15–25 секунд с быстрой сменой сцен. Длинный формат оставьте для тех, кто уже знает ваш продукт.</div>
+    <div class="card good"><h3>Своё фото товара</h3>Если у вас физический товар, замените 1–2 сцены настоящими фото (кнопка «📷 Своё фото» под сценой). Нейросеть не знает, как выглядит именно ваш товар, а реальное фото повышает доверие.</div>
+  </div>
+
+  <h2 class="g">Как получать трафик на сайт<small>что делать после того, как ролики готовы</small></h2>
+  <div class="cards">
+    <div class="card"><h3><span class="n">1</span>Ссылка в профиле</h3>В TikTok и Instagram ссылки в описаниях не кликаются — поставьте ссылку на сайт в профиль. В YouTube добавьте её в раздел ссылок канала. Призыв в конце каждого ролика уже ведёт туда.</div>
+    <div class="card"><h3><span class="n">2</span>Закреплённый комментарий</h3>Сразу после публикации оставьте комментарий с призывом («Ссылка — в профиле, там скидка») и закрепите его. Это читают те, кто досмотрел и сомневается.</div>
+    <div class="card"><h3><span class="n">3</span>Регулярность</h3>1–2 ролика в день в течение месяца дают больше, чем один «идеальный». Меняйте схему, хук и голос — генератор делает новую версию за пару минут.</div>
+    <div class="card"><h3><span class="n">4</span>Оригинальные файлы</h3>Загружайте на каждую площадку свой файл, без водяных знаков других соцсетей: Instagram и YouTube хуже показывают перезалитые чужие ролики. Генератор делает отдельную версию под каждую.</div>
+    <div class="card"><h3><span class="n">5</span>Продвигайте победителей</h3>Через 2–3 дня посмотрите статистику: досмотры, переходы в профиль. Ролик, который уже хорошо идёт сам, выгоднее всего продвигать за деньги (Promote в TikTok, продвижение в Instagram, реклама на YouTube).</div>
+    <div class="card"><h3><span class="n">6</span>Сайт под ролик</h3>Человек должен сразу увидеть на сайте то, что обещал ролик. Если в ролике скидка — она должна быть на первом экране. Иначе переход есть, а покупки нет.</div>
+  </div>
+
+  <h2 class="g">План на первые 30 дней</h2>
+  <div class="plan">
+    <div><b class="d">Дни 1–3</b><span>Оформите профили: понятное имя, описание «кому и чем полезны», ссылка на сайт. Сделайте 3 ролика с разными схемами.</span></div>
+    <div><b class="d">Дни 4–14</b><span>1–2 ролика в день на каждую площадку. Каждый — с новым хуком. Отвечайте на все комментарии в первый час после публикации.</span></div>
+    <div><b class="d">Дни 15–30</b><span>Смотрите, какая схема и какой хук дают больше досмотров и переходов. Делайте больше роликов именно такого типа. Лучший ролик запустите в платное продвижение с небольшим бюджетом.</span></div>
+  </div>
+
+  <h2 class="g">Важно знать</h2>
+  <div class="cards">
+    <div class="card warn"><h3>Метка «создано ИИ»</h3>TikTok, YouTube и Instagram требуют отмечать реалистичный контент, созданный ИИ, или ставят метку сами. Включайте метку при публикации, если в ролике реалистичные люди или сцены: это не мешает показам, а скрытие может привести к ограничениям.</div>
+    <div class="card bad"><h3>Чего не делать</h3><ul>
+      <li>Не обещайте в ролике того, чего нет на сайте, и не придумывайте отзывы и цифры.</li>
+      <li>Не используйте чужие бренды, логотипы, известных людей и чужую музыку.</li>
+      <li>Не публикуйте один и тот же ролик много раз подряд — делайте новые версии.</li>
+    </ul></div>
+    <div class="card warn"><h3>Честно про ожидания</h3>Один ролик редко «взрывается». Трафик приходит от регулярных публикаций и тестирования хуков: первые переходы обычно в первые недели, стабильный поток — через 1–3 месяца. Генератор снимает самую трудную часть — производство, — чтобы вы могли тестировать много вариантов.</div>
+  </div>
+</div>
+</div>
+
+<script type="module">
+import { fal } from 'https://cdn.jsdelivr.net/npm/@fal-ai/client@1/+esm';
+import { Muxer, ArrayBufferTarget } from 'https://cdn.jsdelivr.net/npm/mp4-muxer@5/+esm';
+
+const $ = (id) => document.getElementById(id);
+const esc = (s = '') => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// ---------- ключ ----------
+const store = {
+  get: (k) => { try { return localStorage.getItem(k); } catch { return null; } },
+  set: (k, v) => { try { localStorage.setItem(k, v); } catch {} },
+  del: (k) => { try { localStorage.removeItem(k); } catch {} },
+};
+const saved = store.get('fal_key');
+if (saved) { $('key').value = saved; $('remember').checked = true; }
+$('eye').onclick = () => { $('key').type = $('key').type === 'password' ? 'text' : 'password'; };
+$('remember').onchange = () => { if (!$('remember').checked) store.del('fal_key'); };
+
+// ---------- Сервер (Railway): ключ fal хранится на сервере, вход по паролю ----------
+let SERVER = { online: false, serverKey: false, auth: false, loggedIn: true };
+async function loadServerConfig() {
+  try {
+    const r = await fetch('/api/config', { cache: 'no-store', credentials: 'same-origin', signal: AbortSignal.timeout(6000) });
+    if (r.ok) SERVER = { ...SERVER, ...(await r.json()), online: true };
+  } catch {}
+  if (SERVER.serverKey) {
+    fal.config({ proxyUrl: '/api/fal/proxy' });
+    $('keyBox').style.display = 'none';
+    $('step1Title').textContent = 'Сайт';
+  }
+  $('logout').style.display = SERVER.auth && SERVER.loggedIn ? '' : 'none';
+  $('login').style.display = SERVER.auth && !SERVER.loggedIn ? 'flex' : 'none';
+  if (SERVER.auth && !SERVER.loggedIn) setTimeout(() => $('loginPass').focus(), 50);
+}
+const showLogin = () => { SERVER.loggedIn = false; $('login').style.display = 'flex'; $('loginErr').textContent = 'Сессия закончилась — войдите снова.'; };
+$('loginForm').onsubmit = async (e) => {
+  e.preventDefault();
+  $('loginBtn').disabled = true; $('loginErr').textContent = '';
+  try {
+    const r = await fetch('/api/login', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: $('loginPass').value }) });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.error || 'Неверный пароль');
+    $('loginPass').value = ''; await loadServerConfig();
+  } catch (err) { $('loginErr').innerHTML = `<span class="err">${esc(err.message)}</span>`; }
+  finally { $('loginBtn').disabled = false; }
+};
+$('logout').onclick = async () => { await fetch('/api/logout', { method: 'POST', credentials: 'same-origin' }).catch(() => {}); location.reload(); };
+await loadServerConfig();
+
+// ключ fal: на сервере (ничего не нужно) или введённый в браузере
+function falReady(statusEl) {
+  if (SERVER.serverKey) {
+    if (SERVER.auth && !SERVER.loggedIn) { showLogin(); return false; }
+    return true;
+  }
+  const key = $('key').value.trim();
+  if (!key) { statusEl.innerHTML = '<span class="err">Введите ключ fal.ai в шаге 1</span>'; return false; }
+  if ($('remember').checked) store.set('fal_key', key);
+  fal.config({ credentials: key });
+  return true;
+}
+
+function prepare(statusEl) {
+  let url = $('url').value.trim();
+  if (!falReady(statusEl)) return null;
+  if (!url) { statusEl.innerHTML = '<span class="err">Введите ссылку на сайт в шаге 1</span>'; return null; }
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  let domain;
+  try { domain = new URL(url).hostname.replace(/^www\./, ''); } catch { statusEl.innerHTML = '<span class="err">Неверная ссылка</span>'; return null; }
+  return { url, domain };
+}
+const niceErr = (e) => {
+  const m = String((e && (e.body && e.body.detail && JSON.stringify(e.body.detail))) || (e && e.message) || e);
+  if (SERVER.serverKey && /^(401|Unauthorized)|\b401\b|Unauthorized/i.test(m) && !/balance/i.test(m)) { showLogin(); return 'нужно снова войти'; }
+  if (/401|403|unauthor|forbidden/i.test(m)) return SERVER.serverKey ? 'ключ fal.ai на сервере не подходит или закончился баланс' : 'неверный ключ fal.ai или закончился баланс';
+  if (/balance|credit|payment|402/i.test(m)) return 'закончился баланс fal.ai';
+  return m.slice(0, 220);
+};
+
+
+// ---------- 1. Читаем сайт (из браузера напрямую нельзя из-за CORS, поэтому через ридер) ----------
+// возвращает текст страницы и найденные на ней картинки (кандидаты в фото товара)
+const BAD_IMG = /(logo|icon|sprite|favicon|avatar|pixel|tracking|badge|payment|visa|mastercard|paypal|flag|banner-ad|placeholder|loader|spinner|arrow|star|rating|social|facebook|instagram|twitter|youtube|tiktok|whatsapp|telegram)/i;
+function cleanImages(list, base) {
+  const out = [];
+  list.forEach((u) => {
+    if (!u) return;
+    try {
+      const abs = new URL(u.trim(), base).href;
+      if (!/^https?:/i.test(abs) || /\.(svg|gif|ico)(\?|$)/i.test(abs) || /^data:/i.test(u) || BAD_IMG.test(abs)) return;
+      if (!out.includes(abs)) out.push(abs);
+    } catch {}
+  });
+  return out.slice(0, 12);
+}
+async function readSite(url) {
+  let text = '', images = [];
+  if (SERVER.online) {
+    try {
+      const r = await fetch('/api/read?url=' + encodeURIComponent(url), { credentials: 'same-origin', signal: AbortSignal.timeout(30000) });
+      if (r.ok) { const j = await r.json(); text = j.text || ''; images = cleanImages(j.images || [], url); }
+      if (text.length > 50 && images.length) return { text: text.slice(0, 4000), images };
+    } catch {}
+  }
+  if (text.length < 50) try {
+    const r = await fetch('https://r.jina.ai/' + url, { signal: AbortSignal.timeout(20000) });
+    if (r.ok) {
+      const md = await r.text();
+      images = cleanImages([...images, ...md.matchAll(/!\[[^\]]*\]\((https?:\/\/[^)\s]+)/g)].map((m) => (typeof m === 'string' ? m : m[1])), url);
+      text = md.replace(/!\[[^\]]*\]\([^)]*\)/g, ' ').replace(/\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/\s+/g, ' ').trim();
+    }
+  } catch {}
+  if (text.length < 50 || images.length < 2) {
+    try {
+      const r = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url), { signal: AbortSignal.timeout(20000) });
+      if (r.ok) {
+        const doc = new DOMParser().parseFromString(await r.text(), 'text/html');
+        const m = (n) => doc.querySelector(`meta[property="${n}"],meta[name="${n}"]`)?.content || '';
+        if (text.length < 50) {
+          const heads = [...doc.querySelectorAll('h1,h2,h3')].map((e) => e.textContent.trim()).filter(Boolean).slice(0, 10).join(' | ');
+          const body = [...doc.querySelectorAll('p,li')].map((e) => e.textContent.trim()).join(' ');
+          text = `Title: ${m('og:title') || doc.title}\nDescription: ${m('og:description') || m('description')}\nHeadings: ${heads}\n${body}`.replace(/\s+/g, ' ').trim();
+        }
+        const imgs = [m('og:image'), m('twitter:image'), ...[...doc.querySelectorAll('img')].map((i) => {
+          const ss = i.getAttribute('srcset') || i.getAttribute('data-srcset');
+          if (ss) { const parts = ss.split(',').map((x) => x.trim().split(/\s+/)[0]); return parts[parts.length - 1]; }
+          return i.getAttribute('data-src') || i.getAttribute('src');
+        })];
+        images = cleanImages([...imgs, ...images], url);
+      }
+    } catch {}
+  }
+  return { text: text.length > 50 ? text.slice(0, 3000) : '', images };
+}
+
+
+function wrap(ctx, text, maxW) {
+  const lines = []; let line = '';
+  for (const w of String(text).split(/\s+/).filter(Boolean)) {
+    const test = line ? line + ' ' + w : w;
+    if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = w; } else line = test;
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
+
+// ---------- Настройки ролика ----------
+let ad = null; // текущий проект: сценарий, сцены, картинки
+const VW = 1080, VH = 1920, FPS = 30, TR = 0.45; // кадр, частота, длительность перехода
+const TRANS = ['zoom', 'slide', 'flash', 'swipe', 'fade', 'zoom', 'slide', 'flash'];
+const LINK_HINT = { Russian: 'Ссылка в профиле', English: 'Link in bio', Spanish: 'Enlace en el perfil', German: 'Link in der Bio', Ukrainian: 'Посилання в профілі' };
+const SHORTS_HINT = { Russian: 'Ссылка в профиле канала', English: 'Link on my channel', Spanish: 'Enlace en el canal', German: 'Link im Kanal', Ukrainian: 'Посилання в профілі каналу' };
+const LANG_BOOST = { Russian: 'Russian', English: 'English', Spanish: 'Spanish', German: 'German', Ukrainian: 'Ukrainian' };
+const ease = (x) => (x < 0 ? 0 : x > 1 ? 1 : x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+const easeBack = (x) => { x = Math.min(1, Math.max(0, x)); const c = 1.7; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };
+const clamp01 = (x) => Math.min(1, Math.max(0, x));
+
+const PLATFORMS = {
+  tiktok: { name: 'TikTok', icon: '🎵', file: 'tiktok', colors: ['#25f4ee', '#111111', '#fe2c55'], btn: '#fe2c55' },
+  reels: { name: 'Instagram Reels', icon: '📸', file: 'reels', colors: ['#833ab4', '#fd1d1d', '#fcb045'], btn: '#c13584' },
+  shorts: { name: 'YouTube Shorts', icon: '▶️', file: 'shorts', colors: ['#ff0033', '#c4002a', '#5c0014'], btn: '#ff0033' },
+};
+
+const AD_FORMATS = {
+  problem: 'Problem → agitation → solution. Hook names a painful everyday problem of the target audience; then show the frustration; then reveal the product/website as the solution; show 2-3 concrete benefits in action; then call to action.',
+  reasons: '"3 reasons" format. Hook promises 3 reasons; one or two scenes per reason with a vivid visual proof; then call to action.',
+  story: 'First-person customer story (UGC testimonial style): "I used to struggle with X... then I found this...". Relatable, emotional, natural speech; ends with a recommendation and call to action. Do not invent names, numbers or fake reviews.',
+  beforeafter: 'Before / after transformation. Hook shows the "before" pain, contrast with the "after" result thanks to the product, show how it works, then call to action.',
+  offer: 'Direct offer ad. Hook with the main benefit or offer, show the product in use, what the customer gets, honest urgency, then call to action.',
+  howto: '"How it works in 3 steps". Hook shows the desired result; then step 1, step 2, step 3 of using the product/website, each visually clear; then the result and call to action.',
+};
+const AD_STYLES = {
+  photo: 'premium commercial advertising photography, bright natural light, clean modern set design, shallow depth of field, 35mm lens, crisp detail, true-to-life colors',
+  cinema: 'cinematic film still, dramatic motivated lighting, rich color grading, anamorphic lens, shallow depth of field, high detail',
+  ugc: 'authentic smartphone photo, casual real-life UGC look, natural window light, candid moment, realistic skin texture',
+  product: 'high-end studio product photography, seamless background, softbox lighting, crisp reflections, hero shot, premium feel',
+  '3d': 'high-quality 3D render, soft studio lighting, vibrant colors, glossy materials, octane render style',
+  illustration: 'bold colorful flat illustration, clean shapes, modern editorial style, vibrant palette',
+};
+
+// модели картинок; cost — примерная цена одной картинки в $
+const IMG_MODELS = {
+  'gpt2-medium': { name: 'GPT Image 2', cost: .07, endpoint: 'openai/gpt-image-2', input: (prompt) => ({ prompt, image_size: { width: 864, height: 1536 }, quality: 'medium', num_images: 1, output_format: 'jpeg' }) },
+  'gpt2-high': { name: 'GPT Image 2 high', cost: .3, endpoint: 'openai/gpt-image-2', input: (prompt) => ({ prompt, image_size: { width: 864, height: 1536 }, quality: 'high', num_images: 1, output_format: 'jpeg' }) },
+  'flux-pro': { name: 'FLUX 1.1 Pro', cost: .05, endpoint: 'fal-ai/flux-pro/v1.1', input: (prompt, seed) => ({ prompt, image_size: { width: 864, height: 1536 }, num_images: 1, seed, output_format: 'jpeg' }) },
+  'flux-dev': { name: 'FLUX dev', cost: .03, endpoint: 'fal-ai/flux/dev', input: (prompt, seed) => ({ prompt, image_size: { width: 768, height: 1360 }, num_images: 1, seed, num_inference_steps: 28 }) },
+  'flux-schnell': { name: 'FLUX schnell', cost: .004, endpoint: 'fal-ai/flux/schnell', input: (prompt, seed) => ({ prompt, image_size: { width: 720, height: 1280 }, num_images: 1, seed }) },
+};
+// оживление сцен; cost — примерно за одну сцену
+const ANIM_MODELS = {
+  off: { cost: 0 },
+  hailuo512: { name: 'Hailuo 02', cost: .1, endpoint: 'fal-ai/minimax/hailuo-02/standard/image-to-video', input: (prompt, image_url) => ({ prompt, image_url, duration: '6', resolution: '512P' }) },
+  hailuo768: { name: 'Hailuo 02', cost: .27, endpoint: 'fal-ai/minimax/hailuo-02/standard/image-to-video', input: (prompt, image_url) => ({ prompt, image_url, duration: '6', resolution: '768P' }) },
+  kling: { name: 'Kling 2.5', cost: .35, endpoint: 'fal-ai/kling-video/v2.5-turbo/pro/image-to-video', input: (prompt, image_url) => ({ prompt, image_url, duration: '5', negative_prompt: 'blur, distort, low quality, text, watermark, extra limbs' }) },
+};
+const MUSIC_MODELS = {
+  cassette: { cost: .02, endpoint: 'CassetteAI/music-generator', input: (prompt, sec) => ({ prompt, duration: Math.max(10, Math.ceil(sec)) }), url: (d) => d.audio_file && d.audio_file.url },
+  eleven: { cost: .6, endpoint: 'fal-ai/elevenlabs/music', input: (prompt, sec) => ({ prompt, music_length_ms: Math.max(3000, Math.ceil(sec * 1000)), force_instrumental: true }), url: (d) => d.audio && d.audio.url },
+  beat: { cost: 0 }, off: { cost: 0 },
+};
+
+function updateCosts() {
+  const n = ad ? allScenes().length : +$('adLen').value + ($('useHooks').checked ? 2 : 0);
+  const im = IMG_MODELS[$('imgModel').value], an = ANIM_MODELS[$('animModel').value];
+  const parts = [`картинки ≈ $${(im.cost * n).toFixed(2)}`];
+  if ($('useQC').checked) parts.push(`проверка ≈ $${(.01 * n).toFixed(2)} (+ перерисовка сцен с браком)`);
+  if (an.cost) parts.push(`оживление ≈ $${(an.cost * n).toFixed(2)} (1–3 мин на сцену, сцены делаются параллельно)`);
+  $('modelHint').textContent = `Примерная стоимость за ${n} сцен: ${parts.join(', ')}. Сценарий — меньше цента.`;
+  const plats = document.querySelectorAll('[data-plat]:checked').length || 1;
+  const voice = $('useVoice').checked ? ENGINES[engineKey()].per1k * (n * 75 * (ad && ad.hooks.length > 1 && $('buildHooks').checked ? ad.hooks.length : 1) + plats * 45) / 1000 : 0;
+  const music = MUSIC_MODELS[$('music').value].cost;
+  const animLeft = ad && an.cost ? allScenes().filter((s) => s.img && !(s.clip && s.clipKey === s.imgId + $('animModel').value)).length * an.cost : 0;
+  const variants = ad && ad.hooks.length > 1 && $('buildHooks').checked ? ad.hooks.length : 1;
+  const total = voice + music + animLeft;
+  $('cost').innerHTML = `${variants > 1 ? `${variants} версии × ${plats} площадки = <b>${variants * plats} видео</b>. ` : ''}Сборка: примерно <b>$${total.toFixed(2)}</b>` + (animLeft ? ` (из них оживление сцен ≈ $${animLeft.toFixed(2)})` : '') + '. Цены ориентировочные, точные — в кабинете fal.ai.';
+}
+
+
+// ---------- Загрузка готовых файлов (картинки, видео, звук) ----------
+// сначала напрямую из хранилища fal; если браузер не пускает — через наш сервер (на Railway)
+const imgUrlOf = (data) => {
+  const u = (data && ((data.images && data.images[0] && (data.images[0].url || data.images[0])) || (data.image && (data.image.url || data.image)))) || '';
+  if (!u || typeof u !== 'string') throw new Error('модель не вернула картинку');
+  return u;
+};
+async function fetchMedia(url) {
+  if (/^(blob|data):/.test(url)) return (await fetch(url)).blob();
+  let firstErr;
+  try {
+    const r = await fetch(url, { signal: AbortSignal.timeout(90000) });
+    if (r.ok) return await r.blob();
+    firstErr = new Error(`файл не скачался (${r.status})`);
+  } catch (e) { firstErr = e; }
+  if (typeof SERVER !== 'undefined' && SERVER.online) {
+    const r = await fetch('/api/media?url=' + encodeURIComponent(url), { credentials: 'same-origin', signal: AbortSignal.timeout(180000) });
+    if (r.ok) return await r.blob();
+    const j = await r.json().catch(() => ({}));
+    throw new Error('файл не скачался через сервер: ' + (j.error || r.status));
+  }
+  throw new Error('браузер не смог скачать файл с fal.ai (' + (firstErr && firstErr.message || 'ошибка сети') + ')');
+}
+
+// ---------- Голоса ----------
+// ElevenLabs — самые живые голоса, озвучивают весь текст одним дублем и отдают время каждого слова.
+// MiniMax — родные голоса языка и клонирование своего голоса.
+const LANG_CODE = { Russian: 'ru', English: 'en', Spanish: 'es', German: 'de', Ukrainian: 'uk' };
+const EL_VOICES = [
+  ['Jessica', 'Jessica — живая, тёплая (жен.)'], ['Sarah', 'Sarah — уверенная, располагающая (жен.)'], ['Laura', 'Laura — энергичная, яркая (жен.)'],
+  ['Matilda', 'Matilda — профессиональная (жен.)'], ['Alice', 'Alice — чёткая, вовлекающая (жен.)'], ['Lily', 'Lily — бархатная (жен.)'], ['Aria', 'Aria — выразительная (жен.)'],
+  ['Liam', 'Liam — энергичный блогер (муж.)'], ['Chris', 'Chris — обаятельный, простой (муж.)'], ['Will', 'Will — дружелюбный оптимист (муж.)'],
+  ['Eric', 'Eric — бархатный, вызывает доверие (муж.)'], ['Brian', 'Brian — глубокий, спокойный (муж.)'], ['Roger', 'Roger — расслабленный, уверенный (муж.)'],
+  ['George', 'George — тёплый рассказчик (муж.)'], ['Daniel', 'Daniel — диктор новостей (муж.)'], ['Bill', 'Bill — зрелый, мудрый (муж.)'], ['Callum', 'Callum — с хрипотцой (муж.)'], ['River', 'River — нейтральный'],
+];
+const NATIVE_VOICES = {
+  Russian: [['Russian_BrightHeroine', 'Яркая героиня (жен.)'], ['Russian_AmbitiousWoman', 'Уверенная женщина'], ['Russian_CrazyQueen', 'Дерзкая девушка'], ['Russian_ReliableMan', 'Надёжный мужчина'], ['Russian_AttractiveGuy', 'Обаятельный парень'], ['Russian_HandsomeChildhoodFriend', 'Друг детства (муж.)']],
+  English: [['English_expressive_narrator', 'Expressive narrator'], ['English_radiant_girl', 'Radiant girl'], ['English_Upbeat_Woman', 'Upbeat woman'], ['English_CalmWoman', 'Calm woman'], ['English_magnetic_voiced_man', 'Magnetic man'], ['English_Trustworth_Man', 'Trustworthy man']],
+  Spanish: [['Spanish_SereneWoman', 'Mujer serena'], ['Spanish_Kind-heartedGirl', 'Chica amable'], ['Spanish_CaptivatingStoryteller', 'Cuentacuentos'], ['Spanish_Narrator', 'Narrador'], ['Spanish_DeterminedManager', 'Gerente decidido']],
+  German: [['German_SweetLady', 'Sanfte Frau'], ['German_FriendlyMan', 'Freundlicher Mann'], ['German_PlayfulMan', 'Verspielter Mann']],
+  Ukrainian: [['Ukrainian_CalmWoman', 'Спокійна жінка'], ['Ukrainian_WiseScholar', 'Мудрий вчений']],
+};
+const UNIVERSAL_VOICES = [['Lively_Girl', 'Живой женский'], ['Wise_Woman', 'Мудрый женский'], ['Calm_Woman', 'Спокойный женский'], ['Inspirational_girl', 'Вдохновляющий женский'], ['Friendly_Person', 'Дружелюбный'], ['Casual_Guy', 'Живой мужской'], ['Deep_Voice_Man', 'Низкий мужской'], ['Elegant_Man', 'Элегантный мужской']];
+
+// подача голоса: как это звучит у каждого движка
+const DELIVERY = {
+  blogger: { name: 'живо и по-дружески, как блогер, который делится находкой', el2: { stability: .35, style: .45 }, mm: 'happy' },
+  announcer: { name: 'уверенно и чётко, как рекламный диктор', el2: { stability: .55, style: .25 }, mm: 'neutral' },
+  calm: { name: 'спокойно и доверительно, как совет от друга', el2: { stability: .6, style: .15 }, mm: 'neutral' },
+  energetic: { name: 'энергично и с азартом, как продающая реклама', el2: { stability: .3, style: .6 }, mm: 'happy' },
+};
+const ENGINES = {
+  el3: { name: 'ElevenLabs v3', take: true, per1k: .1, endpoint: 'fal-ai/elevenlabs/tts/eleven-v3',
+    input: (text, o) => ({ text, voice: o.voice, stability: .5, timestamps: !!o.ts, language_code: o.lc, apply_text_normalization: 'auto' }) },
+  el2: { name: 'ElevenLabs Multilingual v2', take: true, per1k: .1, endpoint: 'fal-ai/elevenlabs/tts/multilingual-v2',
+    input: (text, o) => ({ text, voice: o.voice, stability: o.del.el2.stability, similarity_boost: .8, style: o.del.el2.style, speed: Math.min(1.2, Math.max(.7, o.speed)), timestamps: !!o.ts, language_code: o.lc, ...(o.prev ? { previous_text: o.prev } : {}), ...(o.next ? { next_text: o.next } : {}) }) },
+  mm28: { name: 'MiniMax Speech 2.8 HD', take: false, per1k: .1, endpoint: 'fal-ai/minimax/speech-2.8-hd',
+    input: (text, o) => ({ prompt: text, output_format: 'url', language_boost: LANG_BOOST[o.lang] || 'auto', voice_setting: { voice_id: o.voice, speed: o.speed, emotion: o.del.mm, pitch: o.pitch } }) },
+  mm02: { name: 'MiniMax Turbo', take: false, per1k: .06, endpoint: 'fal-ai/minimax/speech-02-turbo',
+    input: (text, o) => ({ text, output_format: 'url', language_boost: LANG_BOOST[o.lang] || 'auto', voice_setting: { voice_id: o.voice, speed: o.speed, emotion: o.del.mm, pitch: o.pitch } }) },
+};
+const SAMPLE = {
+  Russian: 'Слушай, я раньше тратила на это кучу времени… А потом нашла одну штуку — и всё стало в разы проще. Сейчас покажу.',
+  English: 'Okay, so I used to waste so much time on this… Then I found one thing, and honestly, everything got so much easier. Let me show you.',
+  Spanish: 'Mira, antes perdía muchísimo tiempo con esto… Luego encontré algo, y de verdad, todo se volvió mucho más fácil. Te enseño.',
+  German: 'Also, früher habe ich damit so viel Zeit verschwendet… Dann habe ich etwas entdeckt, und ehrlich, alles wurde viel einfacher. Ich zeig’s dir.',
+  Ukrainian: 'Слухай, я раніше витрачала на це купу часу… А потім знайшла одну штуку — і все стало набагато простіше. Зараз покажу.',
+};
+const myVoices = () => { try { return JSON.parse(store.get('my_voices') || '[]'); } catch { return []; } };
+const engineKey = () => $('engine').value;
+
+function fillVoices(selectId) {
+  const lang = $('lang').value, eng = engineKey(), sel = $('voice');
+  const opt = ([id, name]) => `<option value="${esc(id)}">${esc(name)}</option>`;
+  if (eng === 'el3' || eng === 'el2') {
+    sel.innerHTML = `<optgroup label="Женские">${EL_VOICES.filter((v) => /жен/.test(v[1])).map(opt).join('')}</optgroup>` +
+      `<optgroup label="Мужские и нейтральные">${EL_VOICES.filter((v) => !/жен/.test(v[1])).map(opt).join('')}</optgroup>`;
+  } else {
+    const mine = eng === 'mm02' ? myVoices() : [];
+    sel.innerHTML =
+      (mine.length ? `<optgroup label="Мои голоса">${mine.map((v) => opt([v.id, '🎙 ' + v.name])).join('')}</optgroup>` : '') +
+      (NATIVE_VOICES[lang] ? `<optgroup label="Родные голоса для языка">${NATIVE_VOICES[lang].map(opt).join('')}</optgroup>` : '') +
+      `<optgroup label="Универсальные">${UNIVERSAL_VOICES.map(opt).join('')}</optgroup>` +
+      (eng === 'mm02' ? `<optgroup label="Свой голос"><option value="__clone">＋ Клонировать свой голос…</option></optgroup>` : '');
+  }
+  const want = selectId || store.get(`voice_${eng}_${lang}`);
+  if (want && [...sel.options].some((o) => o.value === want)) sel.value = want;
+  const isEl = eng === 'el3' || eng === 'el2';
+  $('clonebox').style.display = sel.value === '__clone' ? 'block' : 'none';
+  $('paceBox').style.display = eng === 'el3' ? 'none' : '';
+  $('pitchBox').style.display = isEl ? 'none' : '';
+  $('voiceHint').textContent = isEl
+    ? 'Весь текст озвучивается одним дублем, как у живого диктора: интонация течёт от фразы к фразе, а сцены и субтитры подстраиваются под каждое слово.'
+    : eng === 'mm02' ? 'Дёшево; можно клонировать свой голос. Каждая фраза озвучивается отдельно.' : 'Родные голоса языка; каждая фраза озвучивается отдельно.';
+  updateCosts();
+}
+$('engine').addEventListener('change', () => { store.set('engine', engineKey()); fillVoices(); });
+if (store.get('engine') && ENGINES[store.get('engine')]) $('engine').value = store.get('engine');
+fillVoices();
+$('lang').addEventListener('change', () => fillVoices());
+$('voice').addEventListener('change', () => {
+  const v = $('voice').value;
+  $('clonebox').style.display = v === '__clone' ? 'block' : 'none';
+  if (v !== '__clone') store.set(`voice_${engineKey()}_${$('lang').value}`, v);
+});
+
+function voiceOpts(lang, extra = {}) {
+  return {
+    lang, lc: LANG_CODE[lang], voice: $('voice').value === '__clone' ? 'Lively_Girl' : $('voice').value,
+    speed: +$('pace').value, pitch: +$('pitch').value, del: DELIVERY[$('delivery').value] || DELIVERY.blogger, ...extra,
+  };
+}
+
+// озвучка с кэшем: одинаковый текст с теми же настройками не оплачивается дважды
+const ttsCache = new Map();
+function ttsRaw(text, lang, extra = {}) {
+  const eng = engineKey(), E = ENGINES[eng], o = voiceOpts(lang, extra);
+  const input = E.input(text, o);
+  const key = E.endpoint + JSON.stringify(input);
+  if (!ttsCache.has(key)) {
+    const p = fal.subscribe(E.endpoint, { input }).then(({ data }) => ({ url: data.audio.url, timestamps: data.timestamps }));
+    p.catch(() => ttsCache.delete(key));
+    ttsCache.set(key, p);
+  }
+  return ttsCache.get(key);
+}
+async function decodeUrl(ac, url) { return ac.decodeAudioData(await (await fetchMedia(url)).arrayBuffer()); }
+async function tts(ac, text, lang, extra) { return decodeUrl(ac, (await ttsRaw(text, lang, extra)).url); }
+
+// разбор времени слов от ElevenLabs (поддерживаем разные форматы ответа)
+function parseTimestamps(ts) {
+  if (!ts) return null;
+  const num = (o, keys) => { for (const k of keys) if (typeof o[k] === 'number') return o[k]; return null; };
+  const S = ['start', 'start_time', 'start_s', 'startTime', 'start_time_seconds', 'start_seconds'];
+  const E = ['end', 'end_time', 'end_s', 'endTime', 'end_time_seconds', 'end_seconds'];
+  const fromChars = (chars, st, en) => {
+    const words = []; let cur = null;
+    chars.forEach((ch, i) => {
+      if (/\s/.test(ch)) { if (cur) { words.push(cur); cur = null; } return; }
+      if (!cur) cur = { w: '', t0: st[i], t1: en[i] };
+      cur.w += ch; cur.t1 = en[i];
+    });
+    if (cur) words.push(cur);
+    return words;
+  };
+  const alignObj = (o) => o && Array.isArray(o.characters) && (o.character_start_times_seconds || o.start_times)
+    ? fromChars(o.characters, o.character_start_times_seconds || o.start_times, o.character_end_times_seconds || o.end_times) : null;
+  let r = alignObj(ts) || alignObj(ts.alignment) || alignObj(ts.normalized_alignment);
+  if (r) return r;
+  if (Array.isArray(ts)) {
+    if (ts.length && (alignObj(ts[0]) || alignObj(ts[0] && ts[0].alignment))) return ts.flatMap((c) => alignObj(c) || alignObj(c.alignment) || []);
+    const items = ts.map((o) => ({ w: String(o.text ?? o.word ?? o.char ?? o.character ?? ''), t0: num(o, S), t1: num(o, E) })).filter((o) => o.t0 !== null);
+    if (!items.length) return null;
+    const charLevel = items.filter((o) => o.w.length <= 1).length > items.length * .8;
+    return charLevel ? fromChars(items.map((o) => o.w || ' '), items.map((o) => o.t0), items.map((o) => o.t1 ?? o.t0)) : items.filter((o) => o.w.trim()).map((o) => ({ ...o, t1: o.t1 ?? o.t0 + .2 }));
+  }
+  return null;
+}
+
+// сопоставляем слова сценария со временем в записи (по буквам, устойчиво к пунктуации)
+function alignScenes(sceneTexts, tsWords, audioDur) {
+  const norm = (s) => s.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+  const T = []; let tStr = '';
+  tsWords.forEach((o) => { const n = norm(o.w); if (!n) return; T.push({ a: tStr.length, b: tStr.length + n.length, t0: o.t0, t1: o.t1 }); tStr += n; });
+  if (!T.length) return null;
+  const toks = []; let sStr = '';
+  sceneTexts.forEach((txt, k) => String(txt).split(/\s+/).filter(Boolean).forEach((w) => { const n = norm(w); toks.push({ k, w, a: sStr.length, b: sStr.length + n.length, n }); sStr += n; }));
+  if (!sStr.length) return null;
+  const ratio = tStr.length / sStr.length;
+  const at = (ci) => { const j = Math.min(tStr.length - 1, Math.max(0, Math.round(ci * ratio))); let lo = 0, hi = T.length - 1; while (lo < hi) { const m = (lo + hi) >> 1; if (T[m].b <= j) lo = m + 1; else hi = m; } return T[lo]; };
+  const words = sceneTexts.map(() => []);
+  let last = 0;
+  toks.forEach((tk) => {
+    let t0, t1;
+    if (tk.n) { t0 = Math.max(last, at(tk.a).t0); t1 = Math.max(t0 + .05, at(tk.b - 1).t1); }
+    else { t0 = last; t1 = last + .05; }
+    t1 = Math.min(t1, audioDur); last = t0;
+    words[tk.k].push({ w: tk.w, t0, t1 });
+  });
+  const starts = words.map((ws) => (ws.length ? ws[0].t0 : null));
+  const ends = words.map((ws) => (ws.length ? ws[ws.length - 1].t1 : null));
+  if (starts.some((s) => s === null)) return null;
+  return { words, starts, ends };
+}
+
+// вся озвучка ролика: одним дублем (ElevenLabs) или по фразам (MiniMax)
+async function makeVoiceover(ac, scenes, lang) {
+  const texts = scenes.map((s) => { const t = s.voice.trim(); return /[.!?…]$/.test(t) ? t : t + '.'; });
+  if (ENGINES[engineKey()].take) {
+    try {
+      const full = texts.join(' ');
+      const r = await ttsRaw(full, lang, { ts: true });
+      const buf = await decodeUrl(ac, r.url);
+      const al = alignScenes(texts, parseTimestamps(r.timestamps) || [], buf.duration);
+      if (al) return { mode: 'take', buf, ...al, fullText: full };
+      console.warn('Нет разметки слов — озвучиваю по фразам');
+    } catch (e) { console.warn('Озвучка одним дублем не удалась', e); }
+  }
+  const bufs = await Promise.all(texts.map((t, k) => tts(ac, t, lang, { prev: texts.slice(Math.max(0, k - 2), k).join(' '), next: texts[k + 1] || '' })));
+  return { mode: 'lines', bufs, fullText: texts.join(' ') };
+}
+
+// прослушивание
+let previewAudio = null;
+$('preview').onclick = async () => {
+  if (!falReady($('voiceHint'))) return;
+  if ($('voice').value === '__clone') return ($('voiceHint').textContent = 'Сначала создайте свой голос ниже');
+  if (previewAudio) previewAudio.pause();
+  const hint = $('voiceHint').textContent;
+  $('preview').disabled = true; $('voiceHint').innerHTML = '<span class="spinner"></span>Озвучиваю пример…';
+  try {
+    const lang = $('lang').value;
+    previewAudio = new Audio((await ttsRaw(SAMPLE[lang] || SAMPLE.English, lang)).url);
+    await previewAudio.play();
+    $('voiceHint').textContent = 'Играет пример. Не нравится — попробуйте другой голос, подачу или движок.';
+  } catch (e) {
+    $('voiceHint').innerHTML = `<span class="err">Не получилось: ${esc(niceErr(e))}</span>`;
+    setTimeout(() => ($('voiceHint').textContent = hint), 6000);
+  } finally { $('preview').disabled = false; }
+};
+
+// клонирование своего голоса (MiniMax)
+let cloneBlob = null, micRec = null;
+const showClone = (blob) => { cloneBlob = blob; $('cloneAudio').src = URL.createObjectURL(blob); $('cloneAudio').style.display = 'block'; };
+$('cloneFile').onchange = (e) => { const f = e.target.files[0]; if (f) { showClone(f); $('cloneStatus').textContent = 'Файл выбран: ' + f.name; } };
+$('recBtn').onclick = async () => {
+  if (micRec && micRec.state === 'recording') return micRec.stop();
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const chunks = []; micRec = new MediaRecorder(stream);
+    micRec.ondataavailable = (e) => e.data.size && chunks.push(e.data);
+    let sec = 0; const timer = setInterval(() => { sec++; $('recBtn').textContent = `⏹ Стоп (${sec} сек)`; if (sec >= 90) micRec.stop(); }, 1000);
+    micRec.onstop = () => {
+      clearInterval(timer); stream.getTracks().forEach((t) => t.stop());
+      $('recBtn').textContent = '⏺ Записать заново';
+      showClone(new Blob(chunks, { type: micRec.mimeType || 'audio/webm' }));
+      $('cloneStatus').textContent = sec < 10 ? 'Слишком коротко — нужно минимум 10 секунд, лучше 20–30.' : `Записано ${sec} сек. Прослушайте и нажмите «Создать голос».`;
+    };
+    micRec.start(); $('recBtn').textContent = '⏹ Стоп (0 сек)';
+    $('cloneStatus').textContent = 'Говорите естественно, как в видео. Например, прочитайте вслух описание своего сайта.';
+  } catch { $('cloneStatus').textContent = 'Нет доступа к микрофону — разрешите его в браузере или загрузите файл.'; }
+};
+$('cloneBtn').onclick = async () => {
+  if (!falReady($('cloneStatus'))) return;
+  if (!cloneBlob) return ($('cloneStatus').textContent = 'Загрузите файл или запишите голос');
+  $('cloneBtn').disabled = true; $('cloneStatus').innerHTML = '<span class="spinner"></span>Создаю голос… (до минуты)';
+  try {
+    const ext = (cloneBlob.type.split('/')[1] || 'webm').split(';')[0];
+    const audio_url = await fal.storage.upload(new File([cloneBlob], cloneBlob.name || `voice.${ext}`, { type: cloneBlob.type || 'audio/webm' }));
+    const lang = $('lang').value;
+    const { data } = await fal.subscribe('fal-ai/minimax/voice-clone', {
+      input: { audio_url, model: 'speech-02-turbo', noise_reduction: true, need_volume_normalization: true, text: SAMPLE[lang] || SAMPLE.English },
+    });
+    if (!data.custom_voice_id) throw new Error('Сервис не вернул голос');
+    const name = $('cloneName').value.trim() || 'Мой голос';
+    store.set('my_voices', JSON.stringify([{ id: data.custom_voice_id, name, date: Date.now() }, ...myVoices()].slice(0, 10)));
+    fillVoices(data.custom_voice_id);
+    store.set(`voice_mm02_${lang}`, data.custom_voice_id);
+    $('cloneStatus').textContent = `Голос «${name}» готов и выбран.`;
+    if (data.audio?.url) { previewAudio = new Audio(data.audio.url); previewAudio.play().catch(() => {}); }
+  } catch (e) {
+    $('cloneStatus').innerHTML = `<span class="err">Не получилось: ${esc(niceErr(e))}. Нужна чистая запись речи от 10 секунд.</span>`;
+  } finally { $('cloneBtn').disabled = false; }
+};
+
+// ---------- Сценарий ----------
+const SYSTEM = 'You are an award-winning direct-response creative director who writes short-form vertical video ads for TikTok, Instagram Reels and YouTube Shorts that get high watch time and click-through. You always answer with valid JSON only.';
+
+async function llmJSON(prompt) {
+  let lastErr;
+  for (const model of ['anthropic/claude-sonnet-4.5', 'google/gemini-2.5-pro', 'google/gemini-2.5-flash', null]) {
+    try {
+      const input = { prompt, system_prompt: SYSTEM, ...(model ? { model } : {}) };
+      const { data } = await fal.subscribe('fal-ai/any-llm', { input });
+      const m = String(data.output || '').match(/\{[\s\S]*\}/);
+      if (!m) throw new Error('Модель вернула неожиданный ответ');
+      return JSON.parse(m[0]);
+    } catch (e) { lastErr = e; if (/401|403|unauthor|balance|402/i.test(String(e && e.message))) break; }
+  }
+  throw lastErr;
+}
+
+async function writeAdScript({ url, siteText, about, focus, audience, lang, n, format, style, delivery, hasProduct, hooks, mode = 'product', screens = [] }) {
+  const MD = MODES[mode] || MODES.product;
+  return llmJSON(`Create a vertical video ad that makes viewers visit this website.
+
+Website URL: ${url}
+${about ? 'Owner description: ' + about + '\n' : ''}${focus ? 'What to advertise: ' + focus + '\n' : ''}${audience ? 'Target audience: ' + audience + '\n' : ''}Website content: ${siteText || '(could not read the site, rely on the URL and descriptions)'}
+
+What is advertised: ${MD.guide}
+Ad structure: ${AD_FORMATS[format] || AD_FORMATS.problem}
+Visual style of all images: ${AD_STYLES[style] || AD_STYLES.photo}
+Voiceover delivery: ${delivery}
+
+Rules:
+- Exactly ${n} scenes, each 2–4 seconds of speech. Scene 1 must stop the scroll in the first 2 seconds (bold claim, painful question, surprising visual). The last scene is a clear call to action to visit the website.
+- Spoken lines: short, conversational, specific, benefit-driven, one idea per scene. No filler, no clichés like "in today's world".
+- The voiceover is read in ONE continuous take, so all lines together must sound like one real person talking naturally: everyday spoken language, natural rhythm, contractions where the language has them, small connecting words between lines ("and", "so", "honestly", "look") where natural. Use punctuation to shape intonation: "…" for a short pause, "—" for emphasis, "!" and "?" where a real person would. Avoid formal or written-style phrasing, bureaucratic words, long noun chains, abbreviations and symbols (write "percent" as a word, numbers in a speakable form).
+- Every image must literally show what is being said in that scene (the specific object, person, action, emotion), so the picture always matches the meaning. Vary shot types (close-up, medium, wide, detail, over-the-shoulder) like a real commercial.
+- If a person appears, describe the SAME person identically in every image prompt (age, gender, hair, clothes) so the ad looks consistent.
+- Keep the main subject in the center of the frame; no text, letters, captions, logos or UI in images.
+${hasProduct && mode === 'app' ? `- Real app screens are available. They will be shown inside a phone in the center of the frame, over the scene image:\n${screens.map((d, i) => `  screen ${i + 1}: ${d}`).join('\n')}\n  Mark 3–5 scenes "product": true where the app should be shown and give each of them "screen": the number of the screen that shows EXACTLY what the voice line of that scene talks about (the line must describe what the viewer sees on that screen; use different screens for different scenes; never talk about a feature that is not on the chosen screen). Always show the app in the solution scenes and in the call-to-action scene.\n  For those scenes the "image" prompt describes the real-life situation of the line that is visible AROUND the phone (who, where, doing what, emotion), with the person or action placed in the upper part or at the sides of the frame because the center is covered by the phone; no phones, no screens, no devices in it.\n  Scenes without the app ("product": false, e.g. the problem/pain) show a fitting real-life situation that literally matches the line.` : hasProduct && mode === 'service' ? `- Real photos of the business (results, place, team) are available and will be used as references in scenes marked "product": true. Mark 2–3 scenes where the real result/place should be visible; describe the situation and action, not how the place looks. Mark all other scenes "product": false.` : hasProduct ? `- Real photos of the product are available and will be inserted into scenes marked "product": true. Mark 2–4 scenes where the product should be clearly visible (always the solution/result scene and the call-to-action scene). In those image prompts describe how and where the product is shown (in hands, on a table, in use, hero shot) but NOT its design — the photo defines how it looks. Mark all other scenes "product": false.` : '- Set "product": true for scenes where the advertised product itself should be clearly visible, false otherwise.'}
+${hooks ? '- Also write 2 alternative versions of scene 1 in "hooks" — completely different hook angles (for example: a shocking question, a bold result/claim, a relatable everyday pain), each must flow naturally into scene 2. They will be A/B tested against scene 1.' : ''}
+- Be truthful to what the website really offers. No fake statistics, fake reviews, prices or brand logos that are not on the site.
+- Outro call to action must match the goal: "${MD.cta[lang] || MD.cta.English}" (adapt naturally, do not copy blindly).
+- Spoken text, captions, outro texts and descriptions in language: ${lang}. Image, motion and music prompts in English.${lang !== 'Ukrainian' ? '\n- For every scene and hook also add "voice_uk" and "caption_uk": accurate Ukrainian translations of "voice" and "caption" (only so the operator understands the ad; they are not shown in the video).' : ''}
+
+Return ONLY this JSON object:
+{
+  "visual_style": "English, 1-2 sentences: shared setting, color palette, lighting and the recurring character description used across all scenes",
+  "scenes": [
+    {
+      "voice": "spoken voiceover line, max 15 words",
+      "caption": "short punchy on-screen headline, max 5 words, different from the voice line",
+      "image": "English, detailed image prompt for exactly this moment: shot type, subject, action, setting, emotion, lighting",
+      "motion": "English, one short sentence describing natural motion for animating this image into a 5 second clip (subject movement + camera move)",
+      "product": false,
+      "screen": null${lang !== 'Ukrainian' ? ',\n      "voice_uk": "Ukrainian translation of voice",\n      "caption_uk": "Ukrainian translation of caption"' : ''}
+    }
+  ],${hooks ? '\n  "hooks": [ { "voice": "...", "caption": "...", "image": "...", "motion": "...", "product": false' + (lang !== 'Ukrainian' ? ', "voice_uk": "...", "caption_uk": "..."' : '') + ' }, { "voice": "...", "caption": "...", "image": "...", "motion": "...", "product": false' + (lang !== 'Ukrainian' ? ', "voice_uk": "...", "caption_uk": "..."' : '') + ' } ],' : ''}
+  "music": "English prompt for instrumental background music matching the ad: genre, mood, tempo in BPM, main instruments, no vocals",
+  "outro_title": "big text for the final screen, max 4 words",
+  "cover_title": "title for the Reels/Shorts cover image: max 5 words, curiosity or a clear benefit",
+  "tiktok": { "outro": "spoken: link in profile, max 10 words", "link_hint": "on-screen, max 4 words", "caption": "TikTok caption with keywords, max 150 chars", "hashtags": ["#a", "#b", "#c", "#d", "#e"] },
+  "reels": { "outro": "spoken: save this and link in bio, max 12 words", "link_hint": "on-screen, max 4 words", "caption": "Instagram caption, 2-3 short sentences, ends with a question, max 300 chars", "hashtags": ["#a", "#b", "#c", "#d", "#e"] },
+  "shorts": { "outro": "spoken: subscribe, link on the channel, max 12 words", "link_hint": "on-screen, max 5 words", "title": "YouTube title with search keywords, max 70 chars, ends with #Shorts", "description": "2 sentences with keywords", "hashtags": ["#a", "#b", "#c"] }
+}`);
+}
+
+// ---------- Фото товара ----------
+// products: [{ id, url (публичная ссылка), src (для показа), blob?, own, picked }]
+let products = [];
+const pid = () => Math.random().toString(36).slice(2, 10);
+const pickLimit = () => (modeKey() === 'app' ? 6 : 3);
+const pickedProducts = () => products.filter((p) => p.picked).slice(0, pickLimit());
+
+function renderProducts() {
+  const n = pickedProducts().length;
+  $('prodGrid').innerHTML = products.map((p) => `
+    <div class="prod ${p.picked ? 'on' : ''}" data-prod="${p.id}" title="Нажмите, чтобы выбрать или убрать">
+      <img src="${esc(p.src)}" alt="" loading="lazy" onerror="this.closest('.prod').classList.add('broken')">
+      <span class="chk">${p.picked ? '✓' : ''}</span>
+      ${p.label ? `<span class="plabel">${esc(p.label)}</span>` : ''}
+      <button type="button" class="del" data-pdel="${p.id}" title="Убрать">×</button>
+    </div>`).join('');
+  $('prodInfo').innerHTML = products.length
+    ? (n ? (modeKey() === 'app' ? `Выбрано экранов: ${n} из ${pickLimit()}. Нейросеть посмотрит, что на каждом, и покажет в сцене тот экран, о котором говорится.` : `Выбрано ${n} из ${pickLimit()}. Сцены, где виден товар, будут нарисованы с вашим настоящим товаром (через GPT Image 2).`) : 'Нажмите на фото товара, чтобы выбрать до 3 штук. Без выбора товар будет нарисован нейросетью «примерно».')
+    : 'Фото товара не найдены — загрузите свои или нажмите «Найти на сайте».';
+  updateCosts();
+}
+$('prodGrid').addEventListener('click', (e) => {
+  const del = e.target.closest('[data-pdel]');
+  if (del) { products = products.filter((p) => p.id !== del.dataset.pdel); renderProducts(); markDirty(); return; }
+  const el = e.target.closest('[data-prod]');
+  if (!el) return;
+  const p = products.find((x) => x.id === el.dataset.prod);
+  if (!p.picked && pickedProducts().length >= pickLimit()) { $('prodInfo').textContent = `Можно выбрать не больше ${pickLimit()} фото — сначала снимите выбор с другого.`; return; }
+  p.picked = !p.picked; renderProducts(); markDirty();
+});
+$('prodFiles').addEventListener('change', (e) => {
+  [...e.target.files].slice(0, 6).forEach((f) => {
+    products.unshift({ id: pid(), blob: f, src: URL.createObjectURL(f), url: null, own: true, picked: pickedProducts().length < 3 });
+  });
+  e.target.value = ''; renderProducts(); markDirty();
+});
+async function findProducts(url, silent) {
+  if (!silent) $('prodInfo').innerHTML = '<span class="spinner"></span>Ищу фото на сайте…';
+  const site = await readSiteCached(url);
+  const known = new Set(products.map((p) => p.url));
+  const fresh = site.images.filter((u) => !known.has(u)).map((u, i) => ({ id: pid(), url: u, src: u, own: false, picked: false }));
+  if (fresh.length && !pickedProducts().length) fresh[0].picked = true; // обычно первое — главное фото товара (og:image)
+  products = [...products, ...fresh].slice(0, 18);
+  renderProducts(); markDirty();
+  return site;
+}
+$('findProd').onclick = async () => {
+  const p = prepare($('prodInfo'));
+  if (!p) return;
+  $('findProd').disabled = true;
+  try { await findProducts(p.url); if (!products.length) $('prodInfo').textContent = 'На странице не нашлось подходящих фото. Загрузите свои — так даже надёжнее.'; }
+  finally { $('findProd').disabled = false; }
+};
+// публичные ссылки на выбранные фото (свои — загружаем в хранилище fal один раз)
+async function productRefs() {
+  const list = pickedProducts();
+  for (const p of list) if (!p.url && p.blob) p.url = await fal.storage.upload(new File([p.blob], 'product.jpg', { type: p.blob.type || 'image/jpeg' }));
+  return list.map((p) => p.url).filter(Boolean);
+}
+
+// ---------- Картинки сцен ----------
+const siteCache = {};
+async function readSiteCached(url) { if (!(url in siteCache)) siteCache[url] = await readSite(url); return siteCache[url]; }
+
+function scenePrompt(sc) {
+  return `${sc.image}.${sc.fixHint ? ' IMPORTANT: ' + sc.fixHint + '.' : ''} ${ad.visualStyle} ${AD_STYLES[ad.style] || AD_STYLES.photo}. Vertical 9:16 advertising frame, main subject centered, uncluttered top and bottom areas. No text, no letters, no captions, no logos, no watermark.`;
+}
+
+async function genSceneImage(sc, seed) {
+  sc.qc = null;
+  const mode = ad.mode || modeKey();
+  if (mode === 'app' && sc.product && pickedProducts().length) return genAppScene(sc, seed);
+  const refs = sc.product && products.some((p) => p.picked) ? await productRefs() : [];
+  let remote;
+  if (refs.length) {
+    // настоящий товар: GPT Image 2 в режиме редактирования по фото-образцам
+    try {
+      const quality = $('imgModel').value === 'gpt2-high' ? 'high' : 'medium';
+      const prompt = mode === 'service'
+        ? `Create a new vertical advertising photo for a service business. Use the real place, people and work results shown in the reference image(s) faithfully — keep their real look, do not invent a different place or result. Scene: ${scenePrompt(sc)}`
+        : `Create a new vertical advertising photo. Use the exact product shown in the reference image(s): keep its real shape, proportions, colors, materials, packaging, label and logo unchanged — do not redesign it. Place it naturally into this scene: ${scenePrompt(sc)}`;
+      const { data } = await fal.subscribe('openai/gpt-image-2/edit', { input: { prompt, image_urls: refs, image_size: { width: 864, height: 1536 }, quality, num_images: 1, output_format: 'jpeg' } });
+      remote = imgUrlOf(data);
+      sc.withProduct = true;
+    } catch (e) { console.warn('Не удалось вставить товар, рисую без него', e); sc.withProduct = false; }
+  }
+  if (!remote) {
+    const M = IMG_MODELS[$('imgModel').value];
+    const { data } = await fal.subscribe(M.endpoint, { input: M.input(scenePrompt(sc), seed ?? ad.seed) });
+    remote = imgUrlOf(data);
+    sc.withProduct = false;
+  }
+  const blob = await fetchMedia(remote);
+  await setSceneImage(sc, blob, remote);
+}
+
+// ---------- Экраны приложения: нейросеть со «зрением» понимает, что на каждом скриншоте ----------
+const appShotList = () => pickedProducts();
+async function describeShots(list, onStatus) {
+  const todo = list.filter((p) => !p.desc);
+  if (!todo.length) return;
+  for (const p of todo) if (!p.url && p.blob) p.url = await fal.storage.upload(new File([p.blob], 'screen.png', { type: p.blob.type || 'image/png' }));
+  onStatus && onStatus(`<span class="spinner"></span>Смотрю, что на скриншотах приложения (${todo.length})…`);
+  const ask = async (items) => {
+    const prompt = `These are ${items.length} screenshots of a mobile app, in order. For EACH screenshot describe what the screen shows and which feature/benefit of the app it demonstrates.
+Return ONLY JSON: {"screens": [{"desc": "English, 1-2 sentences: what is on the screen and what the user can do or see here", "label": "Russian, 2-5 words: short name of the screen, e.g. «Урок со словами», «Статистика прогресса»"}]} with exactly ${items.length} items in the same order.`;
+    let lastErr;
+    for (const model of ['google/gemini-2.5-flash', 'anthropic/claude-sonnet-4.5', 'google/gemini-2.5-pro', null]) {
+      try {
+        const { data } = await fal.subscribe('fal-ai/any-llm/vision', { input: { prompt, image_urls: items.map((p) => p.url), ...(model ? { model } : {}) } });
+        const m = String(data.output || '').match(/\{[\s\S]*\}/);
+        const r = m && JSON.parse(m[0]);
+        if (!r || !Array.isArray(r.screens) || r.screens.length !== items.length) throw new Error('ответ не того формата');
+        r.screens.forEach((s, i) => { items[i].desc = String(s.desc || '').trim(); items[i].label = String(s.label || '').trim(); });
+        return;
+      } catch (e) { lastErr = e; if (/401|403|unauthor|balance|402/i.test(String(e && e.message))) break; }
+    }
+    throw lastErr;
+  };
+  try { await ask(todo); }
+  catch { for (const p of todo) { try { await ask([p]); } catch (e) { console.warn('Скриншот не описан', e); } } } // по одному, если пачкой не вышло
+  renderProducts(); markDirty();
+}
+const shotById = (id) => products.find((p) => p.id === id);
+function shotFor(sc) {
+  const shots = appShotList();
+  if (!shots.length) return null;
+  const chosen = sc.screenId && shotById(sc.screenId);
+  if (chosen) return chosen;
+  const productScenes = allScenes().filter((s) => s.product);
+  return shots[Math.max(0, productScenes.indexOf(sc)) % shots.length];
+}
+// пересобрать кадр с другим экраном без новой генерации фона
+async function recomposeApp(sc) {
+  const shot = shotFor(sc);
+  if (!sc.bgBlob || !shot) return false;
+  const bg = sc.bgBlob;
+  const blob = await phoneComposite(bg, await productBlob(shot), allScenes().indexOf(sc));
+  await setSceneImage(sc, blob, null);
+  sc.bgBlob = bg; sc.withProduct = true;
+  return true;
+}
+function screenSelect(sc, id) {
+  if ((ad && ad.mode) !== 'app' || !sc.product || !appShotList().length) return '';
+  const cur = (shotFor(sc) || {}).id;
+  return `<label class="small">📱 Экран в телефоне</label>
+    <select data-screen="${id}">${appShotList().map((p, i) => `<option value="${p.id}" ${p.id === cur ? 'selected' : ''}>${i + 1}. ${esc(p.label || 'Скриншот ' + (i + 1))}</option>`).join('')}</select>`;
+}
+
+// режим «Приложение»: фон по смыслу фразы + настоящий экран приложения в рамке телефона
+async function genAppScene(sc, seed) {
+  const shot = shotFor(sc);
+  const Mi = IMG_MODELS[$('imgModel').value];
+  const bgPrompt = `${sc.image}. ${ad.visualStyle} ${AD_STYLES[ad.style] || AD_STYLES.photo}. The situation must clearly show the meaning of: "${sc.voice}". Keep the key person/action in the upper part or at the sides of the frame, the center will be covered by a phone. No phones, no screens, no devices, no text.`;
+  const { data } = await fal.subscribe(Mi.endpoint, { input: Mi.input(bgPrompt, seed ?? ad.seed) });
+  const bgBlob = await fetchMedia(imgUrlOf(data));
+  if (!sc.screenId && shot) sc.screenId = shot.id;
+  const blob = await phoneComposite(bgBlob, await productBlob(shot), allScenes().indexOf(sc));
+  await setSceneImage(sc, blob, null);
+  sc.bgBlob = bgBlob; sc.withProduct = true;
+}
+
+function setSceneImage(sc, blob, remote) {
+  if (sc.src) URL.revokeObjectURL(sc.src);
+  sc.bgBlob = null;
+  dropClip(sc);
+  sc.imgId = pid();
+  sc.src = URL.createObjectURL(blob);
+  sc.blob = blob; sc.remote = remote || null;
+  sc.imgPromise = createImageBitmap(blob).then((b) => (sc.img = b));
+  markDirty();
+  return sc.imgPromise;
+}
+function dropClip(sc) {
+  if (sc.clipSrc) URL.revokeObjectURL(sc.clipSrc);
+  sc.clip = null; sc.clipSrc = null; sc.clipKey = null; sc.clipDur = 0; sc.clipBlob = null;
+}
+
+// сцены адресуем строкой: s3 — сцена 3, h1 — вариант хука B (h0 — это сама сцена 1)
+const sceneById = (id) => (id[0] === 'h' ? ad.hooks[+id.slice(1)] : ad.scenes[+id.slice(1)]);
+const allScenes = () => (ad ? [...ad.scenes, ...ad.hooks.slice(1)] : []);
+
+function sceneCard(sc, id, label) {
+  return `
+    <div class="scene">
+      <div class="pic">
+        ${sc.clipSrc ? `<video src="${sc.clipSrc}" autoplay muted loop playsinline></video>` : sc.src ? `<img src="${sc.src}" alt="" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'busy err',textContent:'Картинка не открылась — нажмите «Перерисовать»'}))">` : ''}
+        <span class="num">${esc(label)}</span>
+        ${qcBadge(sc)}
+        ${sc.clipSrc ? '<span class="tag">видео</span>' : sc.own ? '<span class="tag">своё фото</span>' : sc.withProduct ? '<span class="tag">📦 товар</span>' : ''}
+        ${sc.busy ? `<div class="busy"><span class="spinner"></span>${esc(sc.busy)}</div>` : ''}
+        ${!sc.busy && sc.err ? `<div class="busy err">${esc(sc.err)}</div>` : ''}
+      </div>
+      ${qcNotes(sc)}
+      <label class="small">Текст на экране</label>
+      <input data-sc="${id}" data-f="caption" value="${esc(sc.caption)}">
+      <label class="small">Озвучка</label>
+      <textarea data-sc="${id}" data-f="voice">${esc(sc.voice)}</textarea>
+      ${ukBox(sc, id)}
+      ${screenSelect(sc, id)}
+      <label class="check" style="margin:6px 0 0 4px"><input type="checkbox" data-scp="${id}" ${sc.product ? 'checked' : ''}> 📦 Настоящий товар в кадре</label>
+      <details><summary>Что на картинке и движение</summary>
+        <textarea data-sc="${id}" data-f="image" style="margin-top:6px;min-height:90px">${esc(sc.image)}</textarea>
+        <textarea data-sc="${id}" data-f="motion" style="margin-top:6px" placeholder="Движение для оживления">${esc(sc.motion || '')}</textarea>
+      </details>
+      <div class="btns">
+        <button type="button" data-rewrite="${id}" ${sc.busy ? 'disabled' : ''}>✍️ Переписать текст</button>
+        ${sc.prevText ? `<button type="button" data-undo="${id}" title="Вернуть прежний текст" style="flex:0 0 42px">↩</button>` : ''}
+      </div>
+      <div class="btns">
+        <button type="button" data-redraw="${id}" ${sc.busy ? 'disabled' : ''}>🔄 Перерисовать</button>
+        <label>📷 Своё фото<input type="file" accept="image/*" data-own="${id}" style="display:none"></label>
+      </div>
+    </div>`;
+}
+
+function renderBoard() {
+  setTimeout(() => { updateCover(); drawBrandPreview(); }, 0);
+  if (!ad) { $('board').innerHTML = ''; $('hooksBox').style.display = 'none'; return; }
+  const hasHooks = ad.hooks.length > 1;
+  $('hooksBox').style.display = hasHooks ? 'block' : 'none';
+  $('hookBoard').innerHTML = hasHooks ? ad.hooks.map((sc, j) => sceneCard(sc, 'h' + j, `1 · хук ${'ABC'[j]}`)).join('') : '';
+  $('board').innerHTML = ad.scenes.map((sc, i) => (hasHooks && i === 0 ? '' : sceneCard(sc, 's' + i, String(i + 1)))).join('');
+  $('hookBuild').style.display = hasHooks ? '' : 'none';
+}
+
+// ---------- Переписать текст одной сцены ----------
+async function rewriteScene(id) {
+  const sc = sceneById(id);
+  const isHook = id[0] === 'h' || id === 's0';
+  const order = isHook ? [sc, ...ad.scenes.slice(1)] : ad.scenes;
+  const idx = order.indexOf(sc), last = idx === order.length - 1;
+  const role = isHook ? 'the HOOK (first 2 seconds): must stop the scroll — a bold claim, a painful question or a surprising statement'
+    : last ? 'the CALL TO ACTION: clearly invite the viewer to visit the website / follow the link'
+    : 'a middle scene: one concrete benefit or step, moving the story forward';
+  const lines = order.map((s, i) => `${i + 1}. ${i === idx ? '>>> ' : ''}${s.voice}${i === idx ? ' <<< (rewrite this one)' : ''}`).join('\n');
+  const otherHooks = isHook && ad.hooks.length > 1 ? `\nOther hook variants already used (must be different from them): ${ad.hooks.filter((h) => h !== sc).map((h) => `"${h.voice}"`).join(', ')}` : '';
+  const r = await llmJSON(`You are editing one scene of a short vertical video ad for ${ad.url}.
+Voiceover delivery: ${(DELIVERY[$('delivery').value] || DELIVERY.blogger).name}.
+The whole voiceover is read in one continuous take:
+${lines}
+
+Rewrite ONLY the marked scene. It is ${role}.
+The picture shown in this scene: ${sc.image}${(ad.mode === 'app' && sc.product && shotFor(sc) && shotFor(sc).desc) ? `\nThe phone in this scene shows the app screen: ${shotFor(sc).desc}\nThe new line MUST talk about what is visible on this screen.` : ''}
+Current on-screen text: "${sc.caption}"${otherHooks}
+
+Rules: write a fresh, noticeably different version (not a paraphrase of the current one); natural spoken ${ad.lang}, like a real person talking; it must flow naturally from the previous line and into the next one; it must match the picture; truthful, no invented numbers or reviews; voice max 15 words; caption max 5 words, punchy, different from the voice line.
+${needUk() ? 'Also give accurate Ukrainian translations of both in "voice_uk" and "caption_uk".\nReturn ONLY JSON: {"voice": "...", "caption": "...", "voice_uk": "...", "caption_uk": "..."}' : 'Return ONLY JSON: {"voice": "...", "caption": "..."}'}`);
+  if (!r || !r.voice) throw new Error('нейросеть не вернула текст');
+  sc.prevText = { voice: sc.voice, caption: sc.caption, uk: sc.uk || null, ukFor: sc.ukFor || null };
+  sc.voice = String(r.voice).trim();
+  sc.caption = String(r.caption || sc.caption).trim();
+  sc.uk = null; sc.ukFor = null;
+  if (r.voice_uk) setUk(sc, r.voice_uk, r.caption_uk);
+}
+
+// ---------- Украинский перевод сцен (чтобы понимать, что говорится в ролике) ----------
+const needUk = () => ad && ad.lang !== 'Ukrainian';
+const ukStale = (sc) => !sc.uk || !sc.ukFor || sc.ukFor.voice !== sc.voice || sc.ukFor.caption !== sc.caption;
+function setUk(sc, voiceUk, captionUk) {
+  if (!voiceUk) return;
+  sc.uk = { voice: String(voiceUk).trim(), caption: String(captionUk || '').trim() };
+  sc.ukFor = { voice: sc.voice, caption: sc.caption };
+}
+function ukBox(sc, id) {
+  if (!needUk()) return '';
+  const stale = ukStale(sc);
+  return `<div class="uk" data-ukbox="${id}">${sc.uk
+    ? `<span class="ukflag">🇺🇦</span>${sc.uk.caption ? `<b>${esc(sc.uk.caption)}</b><br>` : ''}${esc(sc.uk.voice)}`
+    : '<span class="ukflag">🇺🇦</span><i>перекладу ще немає</i>'}
+    ${stale ? `<button type="button" class="ukbtn" data-tr="${id}">${sc.uk ? 'Текст змінився — оновити переклад' : 'Перекласти'}</button>` : ''}</div>`;
+}
+function refreshUkBox(id) {
+  const el = document.querySelector(`[data-ukbox="${id}"]`);
+  if (el) el.outerHTML = ukBox(sceneById(id), id);
+}
+async function translateScenes(list) {
+  const items = list.map(({ sc }, i) => `${i + 1}. caption: "${sc.caption}" | voice: "${sc.voice}"`).join('\n');
+  const r = await llmJSON(`Translate these lines of a video ad from ${ad.lang} into Ukrainian, accurately and naturally, so that a Ukrainian speaker understands exactly what is said. Keep the meaning, tone and any wordplay explanation-free.
+${items}
+Return ONLY JSON: {"items": [{"caption_uk": "...", "voice_uk": "..."}]} with exactly ${list.length} items in the same order.`);
+  (r.items || []).forEach((t, i) => { if (list[i] && t) setUk(list[i].sc, t.voice_uk, t.caption_uk); });
+}
+async function translateAll(onlyStale = true) {
+  if (!needUk()) return;
+  const all = [...ad.scenes.map((sc, i) => ({ sc, id: 's' + i })), ...ad.hooks.slice(1).map((sc, j) => ({ sc, id: 'h' + (j + 1) }))];
+  const list = all.filter(({ sc }) => !onlyStale || ukStale(sc));
+  if (!list.length) return;
+  await translateScenes(list);
+  markDirty();
+}
+
+// ---------- Автопроверка картинок нейросетью со «зрением» ----------
+const QC_RETRIES = 2; // сколько раз максимум перерисовать сцену с браком
+async function checkScene(sc) {
+  const prompt = `You are a strict quality inspector of AI-generated images for a vertical video ad.
+The image must show: ${sc.image}
+Spoken line in this moment: "${sc.voice}"
+${sc.withProduct ? 'This scene contains the real advertised product from a reference photo — its own packaging label/logo is allowed.' : 'There must be NO readable text, letters, logos or watermarks anywhere.'}
+
+Check carefully:
+1. Anatomy: extra, missing or fused fingers; deformed hands, limbs, faces, eyes, teeth; wrong number of people.
+2. Text: any letters, gibberish signs, captions, watermarks, logos (except the real product label if allowed above).
+3. Meaning: does the picture clearly show what is described and what is said?
+4. Artifacts: melted or merged objects, broken geometry, impossible physics, blurry or noisy areas.
+5. Ad quality: main subject clearly visible and not awkwardly cropped in a 9:16 frame, looks like a professional ad.
+
+Return ONLY JSON:
+{"score": 1-10, "ok": true or false (true only if score >= 7 and there are no anatomy or text defects), "problems": ["short description of each problem in Russian"], "fix": "English: concrete instructions to add to the image prompt to avoid these problems next time"}`;
+  let lastErr;
+  for (const model of ['google/gemini-2.5-flash', 'anthropic/claude-sonnet-4.5', 'google/gemini-2.5-pro', null]) {
+    try {
+      const { data } = await fal.subscribe('fal-ai/any-llm/vision', { input: { prompt, image_urls: [sc.remote], ...(model ? { model } : {}) } });
+      const m = String(data.output || '').match(/\{[\s\S]*\}/);
+      if (!m) throw new Error('пустой ответ проверки');
+      const r = JSON.parse(m[0]);
+      if (!Number.isFinite(+r.score) || typeof r.ok !== 'boolean') throw new Error('проверка вернула ответ не в том формате');
+      const score = Math.max(1, Math.min(10, +r.score));
+      return { score, ok: r.ok === true && score >= 7, problems: [].concat(r.problems || []).map(String).filter(Boolean).slice(0, 4), fix: String(r.fix || '') };
+    } catch (e) { lastErr = e; if (/401|403|unauthor|balance|402/i.test(String(e && e.message))) break; }
+  }
+  throw lastErr;
+}
+// проверяет сцену и при браке перерисовывает (до QC_RETRIES раз), оставляет лучший вариант
+async function qcScene(sc, render) {
+  if (!$('useQC').checked || !sc.remote || sc.own) return;
+  let best = null, tries = 0;
+  for (let attempt = 0; ; attempt++) {
+    sc.busy = attempt ? `проверяю исправленную (${attempt})…` : 'проверяю картинку…'; render();
+    let r;
+    try { r = await checkScene(sc); } catch (e) { console.warn('Проверка не удалась', e); break; }
+    const cur = { blob: sc.blob, remote: sc.remote, withProduct: sc.withProduct, r };
+    if (!best || r.score > best.r.score) best = cur;
+    if (r.ok || attempt >= QC_RETRIES) break;
+    sc.fixHint = r.fix || r.problems.join('; ');
+    sc.busy = `исправляю брак (попытка ${attempt + 1} из ${QC_RETRIES})…`; render();
+    tries++;
+    try { await genSceneImage(sc, Math.floor(Math.random() * 1e9)); } catch (e) { console.warn('Перерисовка не удалась', e); break; }
+  }
+  sc.fixHint = '';
+  if (best && best.remote !== sc.remote) { await setSceneImage(sc, best.blob, best.remote); sc.withProduct = best.withProduct; }
+  sc.qc = best ? { ok: best.r.ok, score: best.r.score, problems: best.r.problems, fixed: tries } : { failed: true };
+  markDirty();
+}
+function qcBadge(sc) {
+  if (!sc.qc || sc.busy) return '';
+  if (sc.qc.failed) return '<span class="qc">проверка не удалась</span>';
+  return sc.qc.ok
+    ? `<span class="qc ok">✅ проверено${sc.qc.fixed ? ` · исправлено ${sc.qc.fixed}×` : ''}</span>`
+    : `<span class="qc warn">⚠️ ${sc.qc.score}/10</span>`;
+}
+function qcNotes(sc) {
+  if (!sc.qc || sc.qc.ok || sc.qc.failed || !sc.qc.problems.length) return '';
+  return `<div class="qcnotes">⚠️ ${sc.qc.problems.map(esc).join('; ')}. Нажмите «🔄 Перерисовать» или замените своим фото.</div>`;
+}
+
+['board', 'hookBoard'].forEach((bid) => {
+  const root = $(bid);
+  root.addEventListener('input', (e) => {
+    const el = e.target.closest('[data-sc]');
+    if (el && ad) { sceneById(el.dataset.sc)[el.dataset.f] = el.value; markDirty(); if (el.dataset.f === 'voice' || el.dataset.f === 'caption') refreshUkBox(el.dataset.sc); }
+  });
+  root.addEventListener('click', async (e) => {
+    const tr = e.target.closest('[data-tr]');
+    if (tr) {
+      if (!ad || !prepare($('sstatus'))) return;
+      tr.disabled = true; tr.textContent = 'перекладаю…';
+      try { await translateScenes([{ sc: sceneById(tr.dataset.tr) }]); markDirty(); } catch (err) { tr.textContent = 'Не вийшло — ще раз'; tr.disabled = false; return; }
+      refreshUkBox(tr.dataset.tr);
+      return;
+    }
+    const u = e.target.closest('[data-undo]');
+    if (u && ad) {
+      const sc = sceneById(u.dataset.undo);
+      if (sc.prevText) { const cur = { voice: sc.voice, caption: sc.caption, uk: sc.uk || null, ukFor: sc.ukFor || null }; Object.assign(sc, sc.prevText); sc.prevText = cur; renderBoard(); markDirty(); }
+      return;
+    }
+    const w = e.target.closest('[data-rewrite]');
+    if (w) {
+      if (!ad || !prepare($('sstatus'))) return;
+      const sc = sceneById(w.dataset.rewrite);
+      sc.busy = 'пишу текст…'; sc.err = ''; renderBoard();
+      try { await rewriteScene(w.dataset.rewrite); } catch (err) { sc.err = 'Не получилось: ' + niceErr(err); }
+      sc.busy = ''; renderBoard(); markDirty();
+      return;
+    }
+    const b = e.target.closest('[data-redraw]');
+    if (!b || !ad || !prepare($('sstatus'))) return;
+    const sc = sceneById(b.dataset.redraw);
+    sc.busy = 'рисую…'; sc.err = ''; renderBoard();
+    try { await genSceneImage(sc, Math.floor(Math.random() * 1e9)); sc.own = false; await qcScene(sc, renderBoard); } catch (err) { sc.err = 'Не получилось: ' + niceErr(err); }
+    sc.busy = ''; renderBoard(); updateCosts();
+  });
+  root.addEventListener('change', async (e) => {
+    const ss = e.target.closest('[data-screen]');
+    if (ss && ad) {
+      const sc = sceneById(ss.dataset.screen);
+      sc.screenId = ss.value; markDirty();
+      sc.busy = 'меняю экран…'; renderBoard();
+      try { if (!(await recomposeApp(sc))) { if (prepare($('sstatus'))) await genSceneImage(sc); } } catch (err) { sc.err = 'Не получилось: ' + niceErr(err); }
+      sc.busy = ''; renderBoard();
+      return;
+    }
+    const pc = e.target.closest('[data-scp]');
+    if (pc && ad) { sceneById(pc.dataset.scp).product = pc.checked; markDirty(); if (pc.checked && !pickedProducts().length) $('sstatus').innerHTML = 'Чтобы товар был настоящим, выберите или загрузите его фото в шаге 1, затем нажмите «🔄 Перерисовать».'; return; }
+    const inp = e.target.closest('[data-own]');
+    if (!inp || !ad || !inp.files[0]) return;
+    const sc = sceneById(inp.dataset.own);
+    try { await setSceneImage(sc, inp.files[0], null); sc.own = true; sc.withProduct = false; sc.qc = null; sc.err = ''; } catch { sc.err = 'Не удалось открыть файл'; }
+    renderBoard(); updateCosts();
+  });
+});
+
+const toScene = (s, fallbackProduct) => {
+  const sc = { voice: String(s.voice || s.caption || ''), caption: String(s.caption || ''), image: String(s.image || s.voice || ''), motion: String(s.motion || ''), product: s.product !== undefined ? !!s.product : !!fallbackProduct, busy: 'рисую…' };
+  if (s.voice_uk) setUk(sc, s.voice_uk, s.caption_uk);
+  const sn = parseInt(s.screen, 10), shots = appShotList();
+  if (sn >= 1 && sn <= shots.length) sc.screenId = shots[sn - 1].id;
+  return sc;
+};
+
+$('mkScript').onclick = async () => {
+  const p = prepare($('sstatus'));
+  if (!p) return;
+  const st$ = (h) => ($('sstatus').innerHTML = h);
+  $('mkScript').disabled = true; $('mkVideo').disabled = true; $('vresult').style.display = 'none';
+  try {
+    const lang = $('lang').value, n = +$('adLen').value, style = $('adStyle').value;
+    st$('<span class="spinner"></span>Читаю сайт…');
+    if (modeKey() === 'app' && !products.some((x) => x.picked)) {
+      const link = ($('storeUrl').value || '').trim() || p.url;
+      if (isStoreLink(link)) { st$('<span class="spinner"></span>Забираю скриншоты из магазина…'); try { await takeAppShots(link, true); } catch (e) { console.warn(e); } }
+    }
+    const site = (products.length || modeKey() === 'app') ? await readSiteCached(p.url) : await findProducts(p.url, true);
+    if (storeInfo && modeKey() === 'app' && siteCache[storeInfo.link] && storeInfo.link !== p.url) site.text = (site.text ? site.text + '\n' : '') + siteCache[storeInfo.link].text;
+    if (modeKey() === 'app' && pickedProducts().length) { try { await describeShots(pickedProducts(), st$); } catch (e) { console.warn(e); } }
+    const hasProduct = pickedProducts().length > 0;
+    const wantHooks = $('useHooks').checked;
+    st$('<span class="spinner"></span>Пишу рекламный сценарий… (20–40 сек)');
+    const script = await writeAdScript({
+      url: p.url, siteText: site.text, about: $('about').value.trim(), focus: $('adFocus').value.trim(), audience: $('audience').value.trim(),
+      lang, n, format: $('adFormat').value, style, delivery: (DELIVERY[$('delivery').value] || DELIVERY.blogger).name, hasProduct, hooks: wantHooks, mode: modeKey(), screens: modeKey() === 'app' ? appShotList().map((p) => p.desc || 'app screen') : [],
+    });
+    const scenes = (script.scenes || []).filter((s) => s && (s.voice || s.caption)).slice(0, n).map((s) => toScene(s));
+    if (!scenes.length) throw new Error('Не удалось написать сценарий, попробуйте ещё раз');
+    const extraHooks = wantHooks ? (script.hooks || []).filter((s) => s && (s.voice || s.caption)).slice(0, 2).map((s) => toScene(s, scenes[0].product)) : [];
+    if (ad) allScenes().forEach((s) => { if (s.src) URL.revokeObjectURL(s.src); dropClip(s); });
+    $('coverTitle').value = ''; $('coverScene').innerHTML = '';
+    ad = { id: pid(), created: Date.now(), mode: modeKey(), coverTitle: undefined, coverScene: 0, ...p, lang, script, style, visualStyle: String(script.visual_style || ''), seed: Math.floor(Math.random() * 1e9), scenes, hooks: [scenes[0], ...extraHooks], music: null };
+    renderBoard(); updateCosts(); markDirty();
+    const todo = allScenes();
+    let done = 0;
+    st$(`<span class="spinner"></span>Рисую ${$('useQC').checked ? 'и проверяю ' : ''}сцены: 0 из ${todo.length}…`);
+    await Promise.all(todo.map(async (sc) => {
+      try { await genSceneImage(sc); await qcScene(sc, renderBoard); } catch (err) { console.error('Сцена не нарисовалась:', err); sc.err = 'Не получилось: ' + niceErr(err); }
+      sc.busy = ''; renderBoard();
+      st$(`<span class="spinner"></span>Рисую ${$('useQC').checked ? 'и проверяю ' : ''}сцены: ${++done} из ${todo.length}…`);
+    }));
+    if (needUk() && allScenes().some(ukStale)) { st$('<span class="spinner"></span>Перекладаю сцени українською…'); try { await translateAll(); renderBoard(); } catch {} }
+    const bad = todo.filter((s) => !s.src).length;
+    const qcFixed = todo.reduce((a, s) => a + ((s.qc && s.qc.fixed) || 0), 0), qcWarn = todo.filter((s) => s.qc && !s.qc.ok && !s.qc.failed).length;
+    const qcLine = $('useQC').checked ? `<br><small>🔍 Проверка: ${qcFixed ? `исправлено брака — ${qcFixed}` : 'брака не найдено'}${qcWarn ? `; ${qcWarn} сцен с замечаниями — посмотрите отмеченные ⚠️` : ''}.</small>` : '';
+    const lostProduct = hasProduct && todo.some((s) => s.product && !s.withProduct && s.src && !s.own);
+    st$(bad ? `<span class="err">${bad} сцен не нарисовались — нажмите «🔄 Перерисовать» под ними.</span>`
+      : '✅ Раскадровка готова. Поправьте тексты, перерисуйте или замените своим фото любую сцену, затем переходите к шагам 3 и 4.' + qcLine +
+        (lostProduct ? '<br><small>В некоторых сценах не удалось вставить товар по фото (сайт может запрещать загрузку картинок) — загрузите фото товара с компьютера и перерисуйте эти сцены.</small>' : ''));
+    $('mkVideo').disabled = false;
+    $('vstatus').textContent = 'Всё готово к сборке.';
+    updateCosts(); markDirty();
+  } catch (e) {
+    st$(`<span class="err">Ошибка: ${esc(niceErr(e))}</span>`);
+  } finally { $('mkScript').disabled = false; }
+};
+
+['imgModel', 'animModel', 'adLen', 'music', 'useVoice', 'engine', 'useHooks', 'buildHooks', 'useQC'].forEach((id) => $(id).addEventListener('change', updateCosts));
+document.querySelectorAll('[data-plat]').forEach((c) => c.addEventListener('change', updateCosts));
+
+
+// ---------- Отрисовка кадров ----------
+const MOTIONS = [
+  (p) => ({ z: 1.05 + .12 * p, x: 0, y: 0 }),          // наезд
+  (p) => ({ z: 1.17 - .12 * p, x: 0, y: 0 }),          // отъезд
+  (p) => ({ z: 1.14, x: 50 - 100 * p, y: 0 }),        // панорама вбок
+  (p) => ({ z: 1.14, x: 0, y: 70 - 140 * p }),        // панорама вверх
+];
+let VIGNETTE = null;
+function vignette() {
+  if (VIGNETTE) return VIGNETTE;
+  const c = document.createElement('canvas'); c.width = VW; c.height = VH;
+  const x = c.getContext('2d');
+  const g = x.createRadialGradient(VW / 2, VH * .45, VW * .35, VW / 2, VH * .5, VH * .75);
+  g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.42)');
+  x.fillStyle = g; x.fillRect(0, 0, VW, VH);
+  let l = x.createLinearGradient(0, VH * .5, 0, VH);
+  l.addColorStop(0, 'rgba(0,0,0,0)'); l.addColorStop(1, 'rgba(0,0,0,.55)');
+  x.fillStyle = l; x.fillRect(0, VH * .5, VW, VH * .5);
+  l = x.createLinearGradient(0, 0, 0, 460);
+  l.addColorStop(0, 'rgba(0,0,0,.35)'); l.addColorStop(1, 'rgba(0,0,0,0)');
+  x.fillStyle = l; x.fillRect(0, 0, VW, 460);
+  return (VIGNETTE = c);
+}
+
+function cover(ctx, src, sw, sh, z, dx, dy) {
+  const s = Math.max(VW / sw, VH / sh) * z, w = sw * s, h = sh * s;
+  ctx.drawImage(src, (VW - w) / 2 + dx, (VH - h) / 2 + dy, w, h);
+}
+
+function drawScene(ctx, sc, lt, dur, k, subs, useClip) {
+  const p = clamp01(lt / dur);
+  const punch = k === 0 ? .14 * (1 - ease(clamp01(lt / .35))) : 0; // «удар» на хуке
+  if (useClip && sc.clip && sc.clip.readyState >= 2) {
+    cover(ctx, sc.clip, sc.clip.videoWidth, sc.clip.videoHeight, 1.02 + .03 * p + punch, 0, 0);
+  } else if (sc.img) {
+    const m = MOTIONS[k % MOTIONS.length](p);
+    cover(ctx, sc.img, sc.img.width, sc.img.height, m.z + punch, m.x, m.y);
+  } else { ctx.fillStyle = '#222'; ctx.fillRect(0, 0, VW, VH); }
+  ctx.drawImage(vignette(), 0, 0);
+
+  // стикер-заголовок сцены
+  if (sc.caption) {
+    const a = easeBack((lt - .08) / .35);
+    const fs = k === 0 ? 86 : 70;
+    ctx.save();
+    ctx.translate(VW / 2, 310); ctx.rotate((k % 2 ? 2 : -2) * Math.PI / 180); ctx.scale(a, a);
+    ctx.font = `900 ${fs}px ${BF()}`;
+    const lines = wrap(ctx, sc.caption.toUpperCase(), 860).slice(0, 2);
+    const lh = fs * 1.12, bw = Math.max(...lines.map((l) => ctx.measureText(l).width)) + 72, bh = lines.length * lh + 44;
+    ctx.fillStyle = k === 0 ? B().hook : B().sticker;
+    ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = 26; ctx.shadowOffsetY = 6;
+    ctx.beginPath(); ctx.roundRect(-bw / 2, -bh / 2, bw, bh, 24); ctx.fill();
+    ctx.shadowColor = 'transparent'; ctx.fillStyle = B().stickerText; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    lines.forEach((l, j) => ctx.fillText(l, 0, -bh / 2 + 22 + lh * (j + .5) + 2));
+    ctx.restore();
+  }
+  if (subs) drawSubs(ctx, subs, lt);
+  if (B().logoPos !== 'outro') drawLogo(ctx, B().logoPos === 'tr' ? 'right' : 'left', 64, 230, 92, .92);
+}
+
+// субтитры: фразы по 2–4 слова, текущее слово подсвечено
+function buildSubs(text, start, dur) {
+  const words = String(text).split(/\s+/).filter(Boolean);
+  if (!words.length || dur <= 0) return null;
+  const weights = words.map((w) => w.replace(/[^\p{L}\p{N}]/gu, '').length + 2 + (/[.,!?…:;]$/.test(w) ? 3 : 0));
+  const sum = weights.reduce((a, b) => a + b, 0);
+  let t = start;
+  return chunkWords(words.map((w, i) => { const d = dur * weights[i] / sum; const o = { w, t0: t, t1: t + d }; t += d; return o; }));
+}
+function drawSubs(ctx, chunks, lt) {
+  if (lt < chunks[0][0].t0 - .05) return;
+  const ch = chunks.find((c) => lt < c[c.length - 1].t1) || chunks[chunks.length - 1];
+  if (lt > ch[ch.length - 1].t1 + .25) return;
+  ctx.save();
+  ctx.font = `900 80px ${BF()}`;
+  ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
+  const space = ctx.measureText(' ').width * 1.7; // запас, чтобы подсвеченное слово не наезжало на соседнее
+  const lines = [[]]; let lw = 0;
+  ch.forEach((o) => {
+    const w = ctx.measureText(o.w.toUpperCase()).width;
+    if (lw + w > 900 && lines[lines.length - 1].length) { lines.push([]); lw = 0; }
+    lines[lines.length - 1].push({ ...o, width: w }); lw += w + space;
+  });
+  const y0 = 1280 - (lines.length - 1) * 48;
+  lines.forEach((line, li) => {
+    const total = line.reduce((a, o) => a + o.width, 0) + space * (line.length - 1);
+    let x = (VW - total) / 2;
+    line.forEach((o) => {
+      const active = lt >= o.t0 && lt < o.t1;
+      if (lt >= o.t0 - .05) {
+        const pop = active ? 1 + .07 * Math.sin(clamp01((lt - o.t0) / .14) * Math.PI / 2) : 1;
+        ctx.save(); ctx.translate(x + o.width / 2, y0 + li * 96); ctx.scale(pop, pop);
+        ctx.textAlign = 'center';
+        ctx.shadowColor = 'rgba(0,0,0,.5)'; ctx.shadowBlur = 18; ctx.shadowOffsetY = 5;
+        ctx.strokeStyle = '#000'; ctx.lineWidth = 16; ctx.strokeText(o.w.toUpperCase(), 0, 0);
+        ctx.shadowColor = 'transparent';
+        ctx.fillStyle = active ? B().hi : '#ffffff';
+        ctx.fillText(o.w.toUpperCase(), 0, 0);
+        ctx.restore();
+      }
+      x += o.width + space;
+    });
+  });
+  ctx.restore();
+}
+
+function drawOutro(ctx, lt, info) {
+  const th = info.theme;
+  // фон: размытая последняя сцена + цвета площадки
+  if (info.bg) { ctx.save(); ctx.filter = 'blur(30px)'; cover(ctx, info.bg, info.bg.width, info.bg.height, 1.25, 0, 0); ctx.restore(); }
+  const g = ctx.createLinearGradient(0, 0, VW, VH);
+  th.colors.forEach((c, j) => g.addColorStop(j / (th.colors.length - 1), c));
+  ctx.globalAlpha = info.bg ? .82 : 1; ctx.fillStyle = g; ctx.fillRect(0, 0, VW, VH); ctx.globalAlpha = 1;
+  ctx.fillStyle = 'rgba(0,0,0,.15)'; ctx.fillRect(0, 0, VW, VH);
+  // всё держим выше нижних ~500px — там кнопки и подписи приложений
+  drawLogo(ctx, 'center', 110, 380, 120, clamp01(lt / .4));
+  info.thumbs.forEach((img, j) => {
+    const a = easeBack(lt / .6 - j * .15), off = j - (info.thumbs.length - 1) / 2;
+    const h = 440, w = h * img.width / img.height;
+    ctx.save();
+    ctx.translate(VW / 2 + off * 235, 560); ctx.rotate(off * 9 * Math.PI / 180); ctx.scale(a, a);
+    ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = 34;
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.roundRect(-w / 2 - 8, -h / 2 - 8, w + 16, h + 16, 24); ctx.fill();
+    ctx.shadowColor = 'transparent';
+    ctx.beginPath(); ctx.roundRect(-w / 2, -h / 2, w, h, 18); ctx.clip();
+    ctx.drawImage(img, -w / 2, -h / 2, w, h);
+    ctx.restore();
+  });
+  const a = easeBack((lt - .3) / .5);
+  ctx.save(); ctx.translate(VW / 2, 1000); ctx.scale(a, a);
+  ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+  ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = 20;
+  ctx.font = `900 94px ${BF()}`;
+  const lines = wrap(ctx, String(info.title).toUpperCase(), 920).slice(0, 2);
+  lines.forEach((l, j) => ctx.fillText(l, 0, j * 104));
+  ctx.restore();
+  const by = 1000 + lines.length * 104 + 70;
+  const b = easeBack((lt - .6) / .5), pulse = 1 + Math.sin(lt * 6) * .03;
+  ctx.save(); ctx.translate(VW / 2, by); ctx.scale(b * pulse, b * pulse);
+  ctx.font = `800 50px ${BF()}`; ctx.textBaseline = 'alphabetic';
+  const hint = String(info.hint) + '  👆';
+  const bw = Math.min(980, ctx.measureText(hint).width + 100);
+  ctx.shadowColor = 'rgba(0,0,0,.3)'; ctx.shadowBlur = 20;
+  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.roundRect(-bw / 2, -60, bw, 104, 52); ctx.fill();
+  ctx.shadowColor = 'transparent';
+  ctx.fillStyle = th.btn; ctx.textAlign = 'center'; ctx.fillText(hint, 0, 10);
+  ctx.restore();
+  ctx.globalAlpha = clamp01((lt - .9) / .4);
+  ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.font = `700 42px ${BF()}`;
+  ctx.fillText(B().name ? `${B().name} · ${info.domain}` : info.domain, VW / 2, by + 130);
+  ctx.globalAlpha = 1;
+}
+
+// ---------- Таймлайн ----------
+const vOff = (k) => (k ? TR * .7 : .25);
+const LEAD = .25; // голос начинается через четверть секунды после старта
+
+// разбивка слов на фразы субтитров по 2–4 слова
+function chunkWords(ws) {
+  const chunks = []; let cur = [];
+  ws.forEach((o) => {
+    cur.push(o);
+    if (cur.length >= 4 || cur.map((x) => x.w).join(' ').length > 20 || /[.,!?…:;]$/.test(o.w)) { chunks.push(cur); cur = []; }
+  });
+  if (cur.length) chunks.push(cur);
+  return chunks.length ? chunks : null;
+}
+
+// vo — озвучка: { mode:'take', buf, words, starts, ends } | { mode:'lines', bufs } | null
+function makeTimeline(scenes, vo, outroVoice, opts) {
+  const n = scenes.length, place = []; // place: где в ролике звучит какой аудиофайл
+  let S = [], subs = [];
+  if (vo && vo.mode === 'take') {
+    S[0] = 0;
+    for (let k = 1; k < n; k++) S[k] = Math.max(S[k - 1] + .9, LEAD + vo.starts[k] - .12);
+    S[n] = Math.max(S[n - 1] + 1, LEAD + vo.ends[n - 1] + .4);
+    place.push({ buf: vo.buf, at: LEAD });
+    subs = scenes.map((_, k) => (opts.subs ? chunkWords(vo.words[k].map((o) => ({ w: o.w, t0: LEAD + o.t0 - S[k], t1: LEAD + o.t1 - S[k] }))) : null));
+  } else {
+    const bufs = (vo && vo.bufs) || [];
+    const durs = scenes.map((sc, k) => bufs[k] ? Math.max(2.1, bufs[k].duration + vOff(k) + .3) : Math.max(2.6, sc.voice.split(/\s+/).length * .36 + 1));
+    S[0] = 0; durs.forEach((d, k) => (S[k + 1] = S[k] + d));
+    bufs.forEach((b, k) => b && place.push({ buf: b, at: S[k] + vOff(k) }));
+    subs = scenes.map((sc, k) => (opts.subs ? buildSubs(sc.voice, vOff(k), bufs[k] ? bufs[k].duration : durs[k] - vOff(k) - .4) : null));
+  }
+  const outroDur = Math.max(2.8, outroVoice ? outroVoice.duration + vOff(1) + .7 : 0);
+  if (outroVoice) place.push({ buf: outroVoice, at: S[n] + vOff(1) });
+  const st = S.slice(0, n + 1);
+  const durs = st.map((s, k) => (k < n ? st[k + 1] - s : outroDur));
+  return { durs, st, total: st[n] + outroDur, subs, place };
+}
+
+// время внутри AI-клипа для момента сцены
+const clipTime = (sc, lt, dur) => Math.min(sc.clipDur - .05, Math.max(0, lt) * Math.min(1, (sc.clipDur - .1) / dur));
+
+function makeFrame(ctx, tl, scenes, outroInfo, useClip) {
+  const { durs, st, subs } = tl;
+  const drawSeg = (k, lt) => (k < scenes.length ? drawScene(ctx, scenes[k], lt, durs[k], k, subs[k], useClip) : drawOutro(ctx, lt, outroInfo));
+  const segAt = (t) => { let k = st.length - 1; while (k > 0 && t < st[k]) k--; return k; };
+  const frame = (t) => {
+    const k = segAt(t), lt = t - st[k];
+    ctx.save();
+    if (k > 0 && lt < TR) {
+      const p = ease(lt / TR), type = TRANS[(k - 1) % TRANS.length], plt = lt + durs[k - 1];
+      if (type === 'slide') {
+        ctx.save(); ctx.translate(-VW * p, 0); drawSeg(k - 1, plt); ctx.restore();
+        ctx.save(); ctx.translate(VW * (1 - p), 0); drawSeg(k, lt); ctx.restore();
+      } else if (type === 'swipe') {
+        ctx.save(); ctx.translate(0, -VH * p); drawSeg(k - 1, plt); ctx.restore();
+        ctx.save(); ctx.translate(0, VH * (1 - p)); drawSeg(k, lt); ctx.restore();
+      } else if (type === 'zoom') {
+        drawSeg(k, lt);
+        ctx.save(); ctx.globalAlpha = 1 - p; ctx.translate(VW / 2, VH / 2); ctx.scale(1 + p * .6, 1 + p * .6); ctx.translate(-VW / 2, -VH / 2); drawSeg(k - 1, plt); ctx.restore();
+      } else if (type === 'flash') {
+        drawSeg(p < .5 ? k - 1 : k, p < .5 ? plt : lt);
+        ctx.fillStyle = `rgba(255,255,255,${1 - Math.abs(2 * p - 1)})`; ctx.fillRect(0, 0, VW, VH);
+      } else {
+        drawSeg(k - 1, plt); ctx.globalAlpha = p; drawSeg(k, lt);
+      }
+    } else drawSeg(k, lt);
+    ctx.restore();
+  };
+  // перед кадром перематываем нужные AI-клипы на точное время
+  const seekClips = async (t) => {
+    if (!useClip) return;
+    const k = segAt(t), lt = t - st[k];
+    const need = [[k, lt]];
+    if (k > 0 && lt < TR) need.push([k - 1, lt + durs[k - 1]]);
+    await Promise.all(need.filter(([i]) => i < scenes.length && scenes[i].clip).map(([i, l]) => seekVideo(scenes[i].clip, clipTime(scenes[i], l, durs[i]))));
+  };
+  return { frame, seekClips };
+}
+function seekVideo(v, t) {
+  if (Math.abs(v.currentTime - t) < .001 && v.readyState >= 2) return Promise.resolve();
+  return new Promise((res) => {
+    const done = () => { v.removeEventListener('seeked', done); clearTimeout(to); res(); };
+    const to = setTimeout(done, 1500);
+    v.addEventListener('seeked', done);
+    v.currentTime = t;
+  });
+}
+
+// ---------- Звук ----------
+function whoosh(ac, dest, at) {
+  const len = .45, buf = ac.createBuffer(1, Math.floor(ac.sampleRate * len), ac.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  const src = ac.createBufferSource(); src.buffer = buf;
+  const f = ac.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = 1.2;
+  f.frequency.setValueAtTime(300, at); f.frequency.exponentialRampToValueAtTime(4000, at + len);
+  const g = ac.createGain();
+  g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(.22, at + .15); g.gain.exponentialRampToValueAtTime(.0001, at + len);
+  src.connect(f).connect(g).connect(dest); src.start(at);
+}
+function beat(ac, dest, t0, total) {
+  const out = ac.createGain(); out.gain.value = 1; out.connect(dest);
+  const spb = 60 / 110, bassNotes = [55, 55, 65.41, 49];
+  const noise = ac.createBuffer(1, Math.floor(ac.sampleRate * .05), ac.sampleRate); const nd = noise.getChannelData(0);
+  for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+  for (let b = 0, t = t0; t < t0 + total - .2; b++, t += spb) {
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.frequency.setValueAtTime(140, t); o.frequency.exponentialRampToValueAtTime(45, t + .12);
+    g.gain.setValueAtTime(.55, t); g.gain.exponentialRampToValueAtTime(.001, t + .25);
+    o.connect(g).connect(out); o.start(t); o.stop(t + .3);
+    const h = ac.createBufferSource(); h.buffer = noise;
+    const hf = ac.createBiquadFilter(); hf.type = 'highpass'; hf.frequency.value = 7000;
+    const hg = ac.createGain(); hg.gain.setValueAtTime(.18, t + spb / 2); hg.gain.exponentialRampToValueAtTime(.001, t + spb / 2 + .05);
+    h.connect(hf).connect(hg).connect(out); h.start(t + spb / 2);
+    const bo = ac.createOscillator(), bg = ac.createGain(), lp = ac.createBiquadFilter();
+    bo.type = 'sawtooth'; bo.frequency.value = bassNotes[Math.floor(b / 4) % 4];
+    lp.type = 'lowpass'; lp.frequency.value = 400;
+    bg.gain.setValueAtTime(.0001, t); bg.gain.exponentialRampToValueAtTime(.12, t + .02); bg.gain.exponentialRampToValueAtTime(.0001, t + spb * .9);
+    bo.connect(lp).connect(bg).connect(out); bo.start(t); bo.stop(t + spb);
+  }
+}
+
+// общий микс: голос, музыка с приглушением под голос, звуки переходов
+function mixAudio(ac, dest, t0, tl, music, opts) {
+  const { st, total } = tl;
+  const master = ac.createDynamicsCompressor();
+  master.threshold.value = -14; master.ratio.value = 3; master.attack.value = .005; master.release.value = .2;
+  master.connect(dest);
+  // голос: убираем гул, чуть добавляем разборчивости и «присутствия»
+  const hp = ac.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 75;
+  const pres = ac.createBiquadFilter(); pres.type = 'peaking'; pres.frequency.value = 3200; pres.Q.value = .9; pres.gain.value = 2;
+  const air = ac.createBiquadFilter(); air.type = 'highshelf'; air.frequency.value = 9000; air.gain.value = 1.5;
+  const voiceBus = ac.createGain(); voiceBus.gain.value = 1.15;
+  hp.connect(pres).connect(air).connect(voiceBus).connect(master);
+  const spoken = [];
+  tl.place.forEach(({ buf, at }) => { const s = ac.createBufferSource(); s.buffer = buf; s.connect(hp); s.start(t0 + at); spoken.push([t0 + at, buf.duration]); });
+  if (opts.sfx) for (let k = 1; k < st.length; k++) whoosh(ac, master, t0 + st[k] - .12);
+  if (opts.music === 'off') return;
+  const mBus = ac.createGain(); mBus.connect(master);
+  const LOUD = music ? .38 : .5, DUCK = music ? .13 : .22;
+  mBus.gain.setValueAtTime(LOUD, t0);
+  const fadeAt = t0 + total - 1.4;
+  spoken.forEach(([at, d]) => {
+    if (at - .08 < fadeAt) mBus.gain.setTargetAtTime(DUCK, at - .08, .06);
+    if (at + d + .05 < fadeAt) mBus.gain.setTargetAtTime(LOUD, at + d + .05, .25);
+  });
+  mBus.gain.setTargetAtTime(0, fadeAt, .4);
+  if (music) { const s = ac.createBufferSource(); s.buffer = music; s.loop = music.duration < total; s.connect(mBus); s.start(t0); s.stop(t0 + total + .1); }
+  else beat(ac, mBus, t0, total);
+}
+
+
+// ---------- Оживление сцен (image-to-video) ----------
+async function animateScene(sc, animKey) {
+  const A = ANIM_MODELS[animKey];
+  if (!sc.remote) sc.remote = await fal.storage.upload(new File([sc.blob], 'scene.jpg', { type: sc.blob.type || 'image/jpeg' }));
+  const prompt = `${sc.motion || 'subtle natural motion, slow cinematic camera push-in'}. Smooth realistic motion, commercial quality, no text.`;
+  const { data } = await fal.subscribe(A.endpoint, { input: A.input(prompt, sc.remote) });
+  if (!data.video || !data.video.url) throw new Error('модель не вернула видео');
+  const blob = await fetchMedia(data.video.url);
+  await loadClip(sc, blob, sc.imgId + animKey);
+  markDirty();
+}
+async function loadClip(sc, blob, key) {
+  dropClip(sc);
+  sc.clipSrc = URL.createObjectURL(blob);
+  const v = document.createElement('video');
+  v.muted = true; v.playsInline = true; v.preload = 'auto'; v.src = sc.clipSrc;
+  await new Promise((res, rej) => { v.onloadeddata = res; v.onerror = () => rej(new Error('не удалось открыть видео')); });
+  sc.clip = v; sc.clipDur = v.duration || 5; sc.clipKey = key; sc.clipBlob = blob;
+}
+
+// ---------- Музыка ----------
+async function getMusic(ac, kind, seconds) {
+  if (kind === 'off' || kind === 'beat') return null;
+  const key = kind + '|' + Math.ceil(seconds / 5);
+  if (ad.music && ad.music.key === key) return ad.music.buf;
+  const M = MUSIC_MODELS[kind];
+  const prompt = (ad.script.music || 'upbeat modern commercial background music, 110 BPM, punchy drums, warm synths, no vocals') + ', instrumental, no vocals, loopable, clean mix for voiceover';
+  const { data } = await fal.subscribe(M.endpoint, { input: M.input(prompt, seconds + 2) });
+  const url = M.url(data);
+  if (!url) throw new Error('сервис музыки не вернул файл');
+  const buf = await ac.decodeAudioData(await (await fetchMedia(url)).arrayBuffer());
+  ad.music = { key, buf };
+  return buf;
+}
+
+// ---------- Кодирование MP4 прямо в браузере (WebCodecs), кадр за кадром ----------
+let ENC = undefined;
+async function pickEncoders() {
+  if (ENC !== undefined) return ENC;
+  ENC = null;
+  if (!('VideoEncoder' in window && 'AudioEncoder' in window && 'VideoFrame' in window && 'AudioData' in window)) return ENC;
+  const vlist = [
+    { mux: 'avc', cfg: { codec: 'avc1.640028', avc: { format: 'avc' } } },
+    { mux: 'avc', cfg: { codec: 'avc1.4d0028', avc: { format: 'avc' } } },
+    { mux: 'avc', cfg: { codec: 'avc1.42e028', avc: { format: 'avc' } } },
+    { mux: 'vp9', cfg: { codec: 'vp09.00.40.08' } },
+  ];
+  const alist = [{ mux: 'aac', cfg: { codec: 'mp4a.40.2' } }, { mux: 'opus', cfg: { codec: 'opus' } }];
+  let v = null, a = null;
+  for (const c of vlist) {
+    const cfg = { ...c.cfg, width: VW, height: VH, bitrate: 14_000_000, framerate: FPS };
+    try { if ((await VideoEncoder.isConfigSupported(cfg)).supported) { v = { mux: c.mux, cfg }; break; } } catch {}
+  }
+  for (const c of alist) {
+    const cfg = { ...c.cfg, sampleRate: 48000, numberOfChannels: 2, bitrate: 192_000 };
+    try { if ((await AudioEncoder.isConfigSupported(cfg)).supported) { a = { mux: c.mux, cfg }; break; } } catch {}
+  }
+  if (v && a) ENC = { v, a };
+  return ENC;
+}
+
+async function renderOffline(job, onProgress) {
+  const { scenes, voices, outroVoice, outroInfo, opts, music } = job;
+  const enc = await pickEncoders();
+  const tl = makeTimeline(scenes, voices, outroVoice, opts);
+  const total = tl.total, SR = 48000;
+
+  // звук: сводим весь ролик заранее
+  const oac = new OfflineAudioContext(2, Math.ceil((total + .05) * SR), SR);
+  mixAudio(oac, oac.destination, 0, tl, music, opts);
+  const audio = await oac.startRendering();
+
+  const target = new ArrayBufferTarget();
+  const muxer = new Muxer({
+    target, fastStart: 'in-memory', firstTimestampBehavior: 'offset',
+    video: { codec: enc.v.mux, width: VW, height: VH, frameRate: FPS },
+    audio: { codec: enc.a.mux, numberOfChannels: 2, sampleRate: SR },
+  });
+  let encErr = null;
+  const venc = new VideoEncoder({ output: (c, m) => muxer.addVideoChunk(c, m), error: (e) => (encErr = e) });
+  venc.configure(enc.v.cfg);
+  const aenc = new AudioEncoder({ output: (c, m) => muxer.addAudioChunk(c, m), error: (e) => (encErr = e) });
+  aenc.configure(enc.a.cfg);
+
+  const c = document.createElement('canvas'); c.width = VW; c.height = VH;
+  const ctx = c.getContext('2d', { alpha: false });
+  const { frame, seekClips } = makeFrame(ctx, tl, scenes, outroInfo, true);
+  const nFrames = Math.ceil(total * FPS);
+  for (let i = 0; i < nFrames; i++) {
+    if (encErr) throw encErr;
+    const t = i / FPS;
+    await seekClips(t);
+    frame(t);
+    const vf = new VideoFrame(c, { timestamp: Math.round(i * 1e6 / FPS), duration: Math.round(1e6 / FPS) });
+    venc.encode(vf, { keyFrame: i % (FPS * 2) === 0 });
+    vf.close();
+    while (venc.encodeQueueSize > 6) await sleep(2);
+    if (i % 6 === 0) { onProgress(i / nFrames); await sleep(0); }
+  }
+  await venc.flush();
+
+  const L = audio.length, ch0 = audio.getChannelData(0), ch1 = audio.getChannelData(1), N = 1024;
+  for (let off = 0; off < L; off += N) {
+    const n = Math.min(N, L - off), buf = new Float32Array(n * 2);
+    buf.set(ch0.subarray(off, off + n), 0); buf.set(ch1.subarray(off, off + n), n);
+    const adata = new AudioData({ format: 'f32-planar', sampleRate: SR, numberOfFrames: n, numberOfChannels: 2, timestamp: Math.round(off / SR * 1e6), data: buf });
+    aenc.encode(adata); adata.close();
+    if (aenc.encodeQueueSize > 20) await sleep(1);
+  }
+  await aenc.flush();
+  if (encErr) throw encErr;
+  muxer.finalize();
+  venc.close(); aenc.close();
+  onProgress(1);
+  return { blob: new Blob([target.buffer], { type: 'video/mp4' }), ext: 'mp4', total, codec: enc.v.mux };
+}
+
+// запасной вариант для браузеров без WebCodecs: запись в реальном времени
+function pickMime() {
+  const list = ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4;codecs=avc1,mp4a.40.2', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm', 'video/mp4'];
+  return list.find((m) => window.MediaRecorder && MediaRecorder.isTypeSupported(m)) || '';
+}
+async function renderRealtime(ac, job, onProgress) {
+  const { scenes, voices, outroVoice, outroInfo, opts, music } = job;
+  const tl = makeTimeline(scenes, voices, outroVoice, opts);
+  const c = document.createElement('canvas'); c.width = VW; c.height = VH;
+  const { frame } = makeFrame(c.getContext('2d'), tl, scenes, outroInfo, false);
+  const dest = ac.createMediaStreamDestination();
+  const t0 = ac.currentTime + .4;
+  mixAudio(ac, dest, t0, tl, music, opts);
+  const stream = new MediaStream([...c.captureStream(FPS).getVideoTracks(), ...dest.stream.getAudioTracks()]);
+  const mime = pickMime();
+  const rec = new MediaRecorder(stream, { ...(mime ? { mimeType: mime } : {}), videoBitsPerSecond: 10_000_000, audioBitsPerSecond: 160_000 });
+  const chunks = [];
+  rec.ondataavailable = (e) => e.data.size && chunks.push(e.data);
+  const finished = new Promise((r) => (rec.onstop = r));
+  frame(0); rec.start(500);
+  await new Promise((resolve) => {
+    const tick = () => {
+      const t = ac.currentTime - t0;
+      frame(Math.max(0, Math.min(t, tl.total)));
+      onProgress(clamp01(t / tl.total));
+      if (t >= tl.total + .15) return resolve();
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
+  rec.stop(); await finished;
+  stream.getTracks().forEach((t) => t.stop());
+  const type = (rec.mimeType || mime || 'video/webm').split(';')[0];
+  return { blob: new Blob(chunks, { type }), ext: type.includes('mp4') ? 'mp4' : 'webm', total: tl.total, codec: 'realtime' };
+}
+
+// ---------- Сборка ----------
+let videoUrls = [];
+function platformText(key, script, first) {
+  const p = script[key] || {};
+  const tags = (p.hashtags || []).slice(0, 5).join(' ');
+  if (key === 'shorts') return { title: (p.title || `${first.caption} #Shorts`).slice(0, 100), caption: `${p.description || ''}\n\n${tags}`.trim() };
+  return { caption: `${p.caption || first.caption || ''}\n\n${tags}`.trim() };
+}
+
+$('mkVideo').onclick = async () => {
+  if (!ad) return;
+  const plats = [...document.querySelectorAll('[data-plat]:checked')].map((c) => c.dataset.plat);
+  const st$ = (h) => ($('vstatus').innerHTML = h);
+  if (!plats.length) return st$('<span class="err">Выберите хотя бы одну площадку</span>');
+  if ($('useVoice').checked && $('voice').value === '__clone') return st$('<span class="err">Сначала создайте свой голос или выберите голос из списка</span>');
+  if (!prepare($('vstatus'))) return;
+  const enc = await pickEncoders();
+  if (!enc && !(window.MediaRecorder && HTMLCanvasElement.prototype.captureStream)) return st$('<span class="err">Этот браузер не умеет делать видео. Откройте страницу в Chrome или Edge.</span>');
+  const ac = new (window.AudioContext || window.webkitAudioContext)(); // создаём в момент клика — иначе браузер не даст звук
+  await ac.resume();
+  const bar = (f) => { $('vbar').style.display = 'block'; $('vbar').firstElementChild.style.width = Math.round(f * 100) + '%'; };
+  $('mkVideo').disabled = true; $('mkScript').disabled = true; $('vresult').style.display = 'none'; $('vresult').innerHTML = '';
+  videoUrls.forEach((u) => URL.revokeObjectURL(u)); videoUrls = [];
+  try {
+    await Promise.all(['900 40px Montserrat', '800 40px Montserrat', '700 40px Montserrat'].map((f) => document.fonts.load(f)));
+    await ensureFont(); await loadLogo();
+    await Promise.all(allScenes().map((s) => s.imgPromise).filter(Boolean));
+    const body = ad.scenes.slice(1).filter((s) => s.img);
+    const hookList = (ad.hooks.length > 1 && $('buildHooks').checked ? ad.hooks : [ad.scenes[0]]).filter((h) => h.img);
+    if (!hookList.length || !body.length) throw new Error('не все сцены готовы — перерисуйте картинки в шаге 2');
+    const variants = hookList.map((h) => [h, ...body]);
+    const multi = variants.length > 1;
+    const { lang, script, domain } = ad;
+    const opts = { subs: $('useSubs').checked, sfx: $('useSfx').checked, music: $('music').value };
+    const hintFor = (key) => (script[key] && script[key].link_hint) || ((MODES[ad.mode] || M()).cta[lang]) || 'Link in bio';
+
+    // 1. оживление сцен (все уникальные сцены всех версий)
+    const animKey = $('animModel').value;
+    let animFailed = 0;
+    if (animKey !== 'off' && enc) {
+      const todo = [...new Set(variants.flat())].filter((s) => !(s.clip && s.clipKey === s.imgId + animKey));
+      let done = 0;
+      if (todo.length) st$(`<span class="spinner"></span>Оживляю сцены: 0 из ${todo.length}… (обычно 1–3 минуты)`);
+      await Promise.all(todo.map(async (sc) => {
+        sc.busy = 'оживляю…'; renderBoard();
+        try { await animateScene(sc, animKey); } catch (e) { animFailed++; sc.err = 'Не оживилась: ' + niceErr(e); }
+        sc.busy = ''; renderBoard();
+        st$(`<span class="spinner"></span>Оживляю сцены: ${++done} из ${todo.length}…`);
+      }));
+    }
+
+    // 2. озвучка: для каждой версии свой дубль (меняется начало)
+    const vos = [], outros = {};
+    if ($('useVoice').checked) {
+      st$(`<span class="spinner"></span>Озвучиваю сценарий (${esc(ENGINES[engineKey()].name)})${multi ? ` — ${variants.length} версии` : ''}…`);
+      try {
+        const all = await Promise.all(variants.map((v) => makeVoiceover(ac, v, lang)));
+        all.forEach((vo, i) => (vos[i] = vo));
+        const o = await Promise.all(plats.map((key) => (script[key] && script[key].outro
+          ? tts(ac, script[key].outro, lang, { prev: all[0].fullText.slice(-300) }) : null)));
+        plats.forEach((key, j) => (outros[key] = o[j]));
+      } catch (e) {
+        vos.length = 0;
+        st$(`<span class="spinner"></span>Озвучка не получилась (${esc(niceErr(e))}), собираю без неё…`); await sleep(1500);
+      }
+    }
+
+    // 3. музыка — одна на все версии, по длине самой длинной
+    let music = null;
+    if (opts.music === 'cassette' || opts.music === 'eleven') {
+      st$('<span class="spinner"></span>Пишу музыку под ролик…');
+      const longest = Math.max(...variants.flatMap((v, i) => plats.map((k) => makeTimeline(v, vos[i] || null, outros[k] || null, opts).total)));
+      try { music = await getMusic(ac, opts.music, longest); }
+      catch (e) { opts.music = 'beat'; st$(`<span class="spinner"></span>Музыка не получилась (${esc(niceErr(e))}), ставлю простой бит…`); await sleep(1500); }
+    }
+
+    // 4. рендер: каждая версия хука × каждая площадка
+    const made = [], jobsN = variants.length * plats.length;
+    let jn = 0;
+    for (let vi = 0; vi < variants.length; vi++) {
+      const scenes = variants[vi], hookTag = multi ? 'ABC'[ad.hooks.indexOf(scenes[0])] : '';
+      for (let j = 0; j < plats.length; j++, jn++) {
+        const key = plats[j], P = PLATFORMS[key];
+        const last = scenes[scenes.length - 1];
+        const outroInfo = {
+          title: script.outro_title || domain, hint: hintFor(key), domain, theme: outroTheme(P), bg: last.img,
+          thumbs: [scenes[1] || scenes[0], scenes[Math.floor(scenes.length / 2)], last].filter((v, i, a) => a.indexOf(v) === i).map((s) => s.img),
+        };
+        const job = { scenes, voices: vos[vi] || null, outroVoice: outros[key] || null, outroInfo, opts, music };
+        const label = `${P.icon} ${P.name}${hookTag ? ' · хук ' + hookTag : ''} (${jn + 1} из ${jobsN})`;
+        const r = enc
+          ? await renderOffline(job, (f) => { bar((jn + f) / jobsN); st$(`<span class="spinner"></span>${label}: монтирую кадры… ${Math.round(f * 100)}%`); })
+          : await renderRealtime(ac, job, (f) => { bar((jn + f) / jobsN); st$(`<span class="spinner"></span>${label}: записываю… Не переключайте вкладку.`); });
+        const url = URL.createObjectURL(r.blob); videoUrls.push(url);
+        const file = `${P.file}${hookTag ? '-hook' + hookTag : ''}-${domain}.${r.ext}`;
+        made.push({ key, P, url, file, hookTag, hookText: scenes[0].caption, ...r, ...platformText(key, script, scenes[0]) });
+      }
+    }
+
+    $('vresult').innerHTML = made.map((m) => `
+      <div class="vcard">
+        <div class="vtitle">${m.P.icon} ${esc(m.P.name)}${m.hookTag ? ` <span style="color:var(--accent)">· хук ${m.hookTag}</span>` : ''}</div>
+        ${m.hookTag ? `<div class="vcap" style="text-align:center;margin:0 0 8px">«${esc(m.hookText)}»</div>` : ''}
+        <video src="${m.url}#t=0.8" preload="metadata" controls playsinline></video>
+        <div class="actions">
+          <a class="dl" href="${m.url}" download="${esc(m.file)}">Скачать</a>
+          ${m.title ? `<button type="button" data-copy="${esc(m.title)}">Название</button>` : ''}
+          <button type="button" data-copy="${esc(m.caption)}">Описание</button>
+          ${m.key !== 'tiktok' ? `<a href="#" data-cover="1" onclick="return false">Обложка</a>` : ''}
+        </div>
+        ${m.title ? `<p class="vcap"><b>${esc(m.title)}</b></p>` : ''}
+        <p class="vcap">${esc(m.caption).replace(/\n/g, '<br>')}</p>
+      </div>`).join('') +
+      (made.length > 1 ? `<div style="grid-column:1/-1;text-align:center"><button class="ghost" type="button" id="dlVideos">Скачать все видео (${made.length})</button></div>` : '');
+    $('vresult').style.display = 'grid';
+    if ($('dlVideos')) $('dlVideos').onclick = () => made.forEach((m, k) => setTimeout(() => {
+      const a = document.createElement('a'); a.href = m.url; a.download = m.file; a.click();
+    }, k * 400));
+    markDirty();
+    const notes = [];
+    if (made[0].codec === 'vp9') notes.push('браузер не умеет H.264, поэтому видео в MP4 с VP9 — для Instagram лучше собрать в Chrome или Edge на Windows/Mac');
+    if (made[0].codec === 'realtime') notes.push('браузер без WebCodecs: видео записано в реальном времени, сцены без оживления');
+    if (animKey !== 'off' && !enc) notes.push('оживление сцен работает только в Chrome/Edge');
+    if (animFailed) notes.push(`${animFailed} сцен не оживились и показаны как фото`);
+    st$(`✅ Готово: ${made.length} видео по ~${Math.round(made[0].total)} сек${multi ? ` (${variants.length} версии хука — публикуйте все и сравните досмотры)` : ''}.` + (notes.length ? `<br><small>Обратите внимание: ${notes.join('; ')}.</small>` : ''));
+    updateCosts();
+  } catch (e) {
+    st$(`<span class="err">Ошибка: ${esc(niceErr(e))}</span>`);
+  } finally {
+    $('mkVideo').disabled = false; $('mkScript').disabled = false;
+    setTimeout(() => ($('vbar').style.display = 'none'), 800);
+    ac.close();
+  }
+};
+
+// ---------- Режимы: приложение / товар / услуга ----------
+const MODES = {
+  app: {
+    title: 'Приложение', urlLabel: 'Ссылка на приложение (сайт, App Store или Google Play)', urlPh: 'https://apps.apple.com/… или сайт приложения',
+    focusLabel: 'Главная фишка или оффер (необязательно)', focusPh: 'Например: бесплатно 7 дней, без рекламы',
+    audPh: 'Например: студенты, которые учат английский', aboutPh: 'Например: приложение для изучения английского по 10 минут в день',
+    prodTitle: '📱 Скриншоты приложения — в ролике будет ваш настоящий интерфейс в рамке телефона',
+    prodHint: 'Загрузите 2–5 вертикальных скриншотов экрана приложения. Они будут показаны в телефоне прямо в кадре — точно как в приложении, без искажений.',
+    hint: 'Ролик показывает приложение в деле на экране телефона и ведёт к скачиванию.',
+    delivery: 'blogger', defFormat: 'problem',
+    formats: [['problem', 'Проблема → приложение решает'], ['features', '3 главные функции'], ['beforeafter', 'Жизнь до и после приложения'], ['story', 'Отзыв пользователя (от первого лица)'], ['howto', 'Как пользоваться: 3 шага'], ['download', 'Оффер: скачай бесплатно']],
+    guide: 'This is a MOBILE APP ad. Goal: installs. Show the app solving a real everyday moment; feature benefits, not technical specs; mention that it is easy and fast to start. Call to action: download / install the app (link in profile). Scenes marked "product": true will display the REAL app screenshot inside a phone mockup overlaid on the image — so for those scenes the "image" prompt must describe only a fitting background environment and mood (blurred-friendly, no phone, no screens, no people holding devices), and the voice line should talk about what is visible on the app screen.',
+    cta: { Russian: 'Скачай — ссылка в профиле', English: 'Download — link in bio', Spanish: 'Descárgala — enlace en el perfil', German: 'Jetzt laden — Link in der Bio', Ukrainian: 'Завантаж — посилання в профілі' },
+  },
+  product: {
+    title: 'Товар', urlLabel: 'Ссылка на товар или магазин', urlPh: 'https://вашсайт.com/товар',
+    focusLabel: 'Что рекламируем (необязательно)', focusPh: 'Например: скидка 20% на первый заказ',
+    audPh: 'Например: занятые мамы 25–40 лет', aboutPh: 'Например: интернет-магазин свечей ручной работы, доставка по Европе',
+    prodTitle: '📦 Фото товара — чтобы в ролике был ваш настоящий товар',
+    prodHint: 'Необязательно. Фото найдутся на сайте автоматически при написании сценария, или загрузите свои (лучше всего — товар на светлом фоне).',
+    hint: 'Ролик показывает настоящий товар в деле и ведёт к покупке.',
+    delivery: 'blogger', defFormat: 'problem',
+    formats: [['problem', 'Проблема → решение'], ['unboxing', 'Распаковка и первое впечатление'], ['reasons', '3 причины купить'], ['beforeafter', 'До и после'], ['story', 'Отзыв покупателя (от первого лица)'], ['offer', 'Акция / скидка']],
+    guide: 'This is a PHYSICAL PRODUCT ad. Goal: purchases. Make it tactile and concrete: textures, close-ups, the product in hands and in real use, the moment of satisfaction. Call to action: buy / order (link in profile).',
+    cta: { Russian: 'Заказать — ссылка в профиле', English: 'Shop now — link in bio', Spanish: 'Cómpralo — enlace en el perfil', German: 'Jetzt bestellen — Link in der Bio', Ukrainian: 'Замовити — посилання в профілі' },
+  },
+  service: {
+    title: 'Услуга', urlLabel: 'Ссылка на сайт услуги', urlPh: 'https://вашсайт.com',
+    focusLabel: 'Оффер (необязательно)', focusPh: 'Например: первая консультация бесплатно',
+    audPh: 'Например: владельцы малого бизнеса в Мадриде', aboutPh: 'Например: студия маникюра в центре города, запись онлайн',
+    prodTitle: '🛠 Фото ваших работ, команды или места — чтобы в ролике были настоящие результаты',
+    prodHint: 'Необязательно. Загрузите фото результатов (до/после), вашего салона или офиса, команды. Нейросеть встроит их в сцены.',
+    hint: 'Ролик вызывает доверие к специалисту и ведёт к заявке или записи.',
+    delivery: 'calm', defFormat: 'problem',
+    formats: [['problem', 'Проблема → решение'], ['howto', 'Как мы работаем: 3 шага'], ['beforeafter', 'Результат до и после'], ['story', 'История клиента'], ['expert', 'Эксперт: миф и правда'], ['consult', 'Оффер: бесплатная консультация']],
+    guide: 'This is a SERVICE ad. Goal: leads / bookings. Build trust: expertise, care, the process, the result for the client, social proof only if it is on the site. Show real-looking people and places, calm confident tone. Call to action: book / leave a request (link in profile).',
+    cta: { Russian: 'Записаться — ссылка в профиле', English: 'Book now — link in bio', Spanish: 'Reserva — enlace en el perfil', German: 'Jetzt buchen — Link in der Bio', Ukrainian: 'Записатися — посилання в профілі' },
+  },
+};
+Object.assign(AD_FORMATS, {
+  features: '"3 key features" format. Hook shows the result the user gets; then one scene per feature showing it in use and the benefit it gives; then call to action.',
+  download: 'Direct install offer. Hook with the main benefit; show the app in action in 2–3 quick moments; stress that it is free/easy to start (only if true); then call to action to download.',
+  unboxing: 'Unboxing / first impression. Hook teases what is inside; then opening the package, first look, details and textures, first use and the "wow" moment; then call to action.',
+  expert: '"Expert: myth vs truth". Hook states a common myth of the audience; the expert explains the truth simply; shows how the service solves it properly; then call to action.',
+  consult: 'Free consultation offer (only if it is offered on the site; otherwise a simple booking offer). Hook names the client\'s doubt; show what happens at the consultation and what the client gets; then call to action to book.',
+});
+const modeKey = () => (MODES[$('mode').value] ? $('mode').value : 'product');
+const M = () => MODES[modeKey()];
+
+function applyMode(key, opts = {}) {
+  if (!MODES[key]) key = 'product';
+  $('mode').value = key;
+  const m = MODES[key];
+  document.querySelectorAll('[data-mode]').forEach((b) => b.classList.toggle('on', b.dataset.mode === key));
+  $('urlLabel').textContent = m.urlLabel; $('url').placeholder = m.urlPh;
+  $('focusLabel').textContent = m.focusLabel; $('adFocus').placeholder = m.focusPh;
+  $('audience').placeholder = m.audPh; $('about').placeholder = m.aboutPh;
+  $('prodTitle').textContent = m.prodTitle;
+  $('modeHint').textContent = m.hint;
+  if (!products.length) $('prodInfo').textContent = m.prodHint;
+  $('findProd').style.display = key === 'app' ? 'none' : '';
+  $('appRow').style.display = key === 'app' ? 'block' : 'none';
+  if (key === 'app' && !$('storeUrl').value && isStoreLink($('url').value)) $('storeUrl').value = $('url').value.trim();
+  const cur = $('adFormat').value;
+  $('adFormat').innerHTML = m.formats.map(([v, t]) => `<option value="${v}">${esc(t)}</option>`).join('');
+  $('adFormat').value = m.formats.some(([v]) => v === cur) ? cur : m.defFormat;
+  if (!opts.keepDelivery) $('delivery').value = m.delivery;
+  store.set('mode', key);
+}
+document.querySelectorAll('[data-mode]').forEach((b) => b.onclick = () => { applyMode(b.dataset.mode); markDirty(); });
+
+// ---------- Бренд-кит ----------
+const FONTS = ['Montserrat', 'Inter', 'Manrope', 'Rubik', 'Unbounded', 'Oswald', 'Roboto', 'Comfortaa', 'Playfair Display', 'PT Sans'];
+const BRAND_DEFAULT = { on: true, name: '', logo: null, logoPos: 'tl', font: 'Montserrat', customFont: null, customFontName: '', outro: 'platform',
+  primary: '#ff2d55', secondary: '#111111', hook: '#ffe600', sticker: '#ffffff', stickerText: '#111111', hi: '#ffe600' };
+let brand = { ...BRAND_DEFAULT };
+let logoImg = null;
+try { brand = { ...BRAND_DEFAULT, ...JSON.parse(store.get('brand') || '{}') }; } catch {}
+const B = () => (brand.on ? brand : BRAND_DEFAULT); // если бренд-кит выключен — стандартное оформление
+const fontName = () => (B().font === '__custom' && brand.customFont ? 'BrandCustom' : (B().font === '__custom' ? 'Montserrat' : B().font));
+const BF = () => `"${fontName()}", Montserrat, Arial, sans-serif`;
+
+function saveBrand() {
+  try { store.set('brand', JSON.stringify(brand)); $('bState').textContent = '✓ сохранено'; }
+  catch { $('bState').innerHTML = '<span class="err">не хватает места — уменьшите логотип или шрифт</span>'; }
+}
+const loadedFonts = new Set(['Montserrat']);
+async function ensureFont() {
+  const f = fontName();
+  if (f === 'BrandCustom') {
+    if (!loadedFonts.has('BrandCustom')) {
+      try { const ff = new FontFace('BrandCustom', `url(${brand.customFont})`); await ff.load(); document.fonts.add(ff); loadedFonts.add('BrandCustom'); } catch { $('bState').innerHTML = '<span class="err">шрифт не открылся</span>'; }
+    }
+  } else if (!loadedFonts.has(f)) {
+    const l = document.createElement('link'); l.rel = 'stylesheet';
+    l.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(f).replace(/%20/g, '+')}:wght@500;700;800;900&display=swap&subset=cyrillic`;
+    document.head.appendChild(l); loadedFonts.add(f);
+    await new Promise((r) => { l.onload = r; l.onerror = r; setTimeout(r, 4000); });
+  }
+  try { await Promise.all(['900', '800', '700'].map((w) => document.fonts.load(`${w} 40px "${f}"`))); } catch {}
+}
+async function loadLogo() {
+  logoImg = null;
+  if (brand.logo) { try { logoImg = await createImageBitmap(await (await fetch(brand.logo)).blob()); } catch {} }
+}
+// логотип уменьшаем до 600px, чтобы помещался в хранилище браузера
+async function shrinkImage(file, max = 600) {
+  const bmp = await createImageBitmap(file);
+  const k = Math.min(1, max / Math.max(bmp.width, bmp.height));
+  const c = document.createElement('canvas'); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+  c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+  return c.toDataURL('image/png');
+}
+const fileToDataURL = (f) => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(f); });
+
+const BRAND_FIELDS = { bName: 'name', bLogoPos: 'logoPos', bFont: 'font', bOutro: 'outro', bPrimary: 'primary', bSecondary: 'secondary', bHook: 'hook', bSticker: 'sticker', bStickerText: 'stickerText', bHi: 'hi' };
+function fillBrandUI() {
+  $('bFont').innerHTML = FONTS.map((f) => `<option value="${f}" style="font-family:'${f}'">${f}</option>`).join('') + `<option value="__custom">${brand.customFont ? 'Свой: ' + esc(brand.customFontName || 'шрифт') : 'Свой шрифт (загрузите файл)'}</option>`;
+  Object.entries(BRAND_FIELDS).forEach(([id, k]) => ($(id).value = brand[k]));
+  $('bOn').checked = brand.on;
+  $('bLogoImg').src = brand.logo || ''; $('bLogoImg').style.display = brand.logo ? '' : 'none'; $('bLogoDel').style.display = brand.logo ? '' : 'none';
+  $('brandBody').style.opacity = brand.on ? 1 : .45;
+}
+async function brandChanged() { saveBrand(); fillBrandUI(); await ensureFont(); drawBrandPreview(); updateCover(); }
+Object.entries(BRAND_FIELDS).forEach(([id, k]) => $(id).addEventListener('input', () => { brand[k] = $(id).value; brandChanged(); }));
+$('bOn').onchange = () => { brand.on = $('bOn').checked; brandChanged(); };
+$('bLogo').onchange = async (e) => {
+  const f = e.target.files[0]; e.target.value = '';
+  if (!f) return;
+  try { brand.logo = await shrinkImage(f); await loadLogo(); brandChanged(); } catch { $('bState').innerHTML = '<span class="err">не удалось открыть логотип</span>'; }
+};
+$('bLogoDel').onclick = async () => { brand.logo = null; await loadLogo(); brandChanged(); };
+$('bFontFile').onchange = async (e) => {
+  const f = e.target.files[0]; e.target.value = '';
+  if (!f) return;
+  if (f.size > 1.5e6) { $('bState').innerHTML = '<span class="err">файл шрифта больше 1,5 МБ — возьмите .woff2</span>'; return; }
+  brand.customFont = await fileToDataURL(f); brand.customFontName = f.name.replace(/\.\w+$/, ''); brand.font = '__custom';
+  loadedFonts.delete('BrandCustom'); brandChanged();
+};
+$('bReset').onclick = async () => { if (!confirm('Сбросить бренд-кит к стандартному оформлению?')) return; brand = { ...BRAND_DEFAULT }; await loadLogo(); brandChanged(); };
+
+function drawLogo(ctx, x, y, maxW, maxH, alpha = 1) {
+  if (!logoImg || !B().logo) return;
+  const k = Math.min(maxW / logoImg.width, maxH / logoImg.height);
+  const w = logoImg.width * k, h = logoImg.height * k;
+  ctx.save(); ctx.globalAlpha = alpha; ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = 12;
+  ctx.drawImage(logoImg, x === 'center' ? (VW - w) / 2 : x === 'right' ? VW - 44 - w : 44, y, w, h);
+  ctx.restore();
+}
+function outroTheme(P) {
+  const b = B();
+  return b.outro === 'brand' && brand.on ? { colors: [b.primary, b.secondary], btn: b.primary } : P;
+}
+
+// предпросмотр бренда: кадр сцены и финальная заставка
+async function drawBrandPreview() {
+  const sc = ad && ad.scenes[0] && ad.scenes[0].img ? ad.scenes[0] : null;
+  let img = sc && sc.img;
+  if (!img) {
+    const c = document.createElement('canvas'); c.width = 540; c.height = 960; const x = c.getContext('2d');
+    const g = x.createLinearGradient(0, 0, 540, 960); g.addColorStop(0, '#8ec5fc'); g.addColorStop(1, '#3d5a80'); x.fillStyle = g; x.fillRect(0, 0, 540, 960);
+    img = await createImageBitmap(c);
+  }
+  const fake = { img, caption: sc ? sc.caption : 'Ваш заголовок', voice: '' };
+  const big = document.createElement('canvas'); big.width = VW; big.height = VH;
+  const bx = big.getContext('2d');
+  const subs = chunkWords([{ w: 'ТАК', t0: 0, t1: .3 }, { w: 'ВЫГЛЯДЯТ', t0: .3, t1: .9 }, { w: 'СУБТИТРЫ', t0: .9, t1: 1.5 }]);
+  drawScene(bx, fake, .6, 3, 0, subs, false);
+  const pc = $('bPrevScene').getContext('2d'); pc.clearRect(0, 0, 270, 480); pc.drawImage(big, 0, 0, 270, 480);
+  bx.clearRect(0, 0, VW, VH);
+  drawOutro(bx, 2, { title: (ad && ad.script && ad.script.outro_title) || 'Ваш призыв', hint: M().cta[$('lang').value] || M().cta.Russian, domain: (ad && ad.domain) || 'вашсайт.com', theme: outroTheme(PLATFORMS.tiktok), bg: img, thumbs: [img] });
+  const po = $('bPrevOutro').getContext('2d'); po.clearRect(0, 0, 270, 480); po.drawImage(big, 0, 0, 270, 480);
+}
+
+// ---------- Телефон с настоящим скриншотом (режим «Приложение») ----------
+async function phoneComposite(bgBlob, shotBlob, k) {
+  const bg = await createImageBitmap(bgBlob), shot = await createImageBitmap(shotBlob);
+  const c = document.createElement('canvas'); c.width = VW; c.height = VH;
+  const x = c.getContext('2d');
+  const s = Math.max(VW / bg.width, VH / bg.height) * 1.08;
+  x.filter = 'blur(2px) brightness(.85) saturate(1.1)';
+  x.drawImage(bg, (VW - bg.width * s) / 2, (VH - bg.height * s) / 2, bg.width * s, bg.height * s);
+  x.filter = 'none';
+  // свечение в цвете бренда
+  const glow = x.createRadialGradient(VW / 2, VH * .52, 50, VW / 2, VH * .52, 620);
+  glow.addColorStop(0, (B().primary || '#ff2d55') + '88'); glow.addColorStop(1, 'rgba(0,0,0,0)');
+  x.fillStyle = glow; x.fillRect(0, 0, VW, VH);
+  // телефон
+  const pw = 540, ph = 1116, bez = 20, r = 78;
+  x.save();
+  x.translate(VW / 2, VH * .53); x.rotate((k % 2 ? 3 : -3) * Math.PI / 180);
+  x.shadowColor = 'rgba(0,0,0,.55)'; x.shadowBlur = 70; x.shadowOffsetY = 30;
+  x.fillStyle = '#0b0b0d'; x.beginPath(); x.roundRect(-pw / 2, -ph / 2, pw, ph, r); x.fill();
+  x.shadowColor = 'transparent';
+  x.strokeStyle = '#3a3a40'; x.lineWidth = 4; x.beginPath(); x.roundRect(-pw / 2 + 2, -ph / 2 + 2, pw - 4, ph - 4, r - 2); x.stroke();
+  const sw = pw - bez * 2, sh = ph - bez * 2;
+  x.beginPath(); x.roundRect(-sw / 2, -sh / 2, sw, sh, r - bez); x.clip();
+  x.fillStyle = '#fff'; x.fillRect(-sw / 2, -sh / 2, sw, sh);
+  const ks = Math.max(sw / shot.width, sh / shot.height);
+  x.drawImage(shot, -shot.width * ks / 2, -sh / 2, shot.width * ks, shot.height * ks); // прижимаем к верху экрана
+  x.restore();
+  // «чёлка»
+  x.save(); x.translate(VW / 2, VH * .53); x.rotate((k % 2 ? 3 : -3) * Math.PI / 180);
+  x.fillStyle = '#0b0b0d'; x.beginPath(); x.roundRect(-70, -ph / 2 + bez + 14, 140, 34, 17); x.fill();
+  x.restore();
+  return new Promise((res) => c.toBlob(res, 'image/jpeg', .92));
+}
+async function productBlob(p) {
+  if (p.blob) return p.blob;
+  return fetchMedia(p.url);
+}
+
+// ---------- Обложка для Reels и Shorts ----------
+function coverScenes() { return ad ? [...ad.hooks, ...ad.scenes.slice(1)].filter((s, i, a) => s.img && a.indexOf(s) === i) : []; }
+function drawCover(ctx, sc, title) {
+  const b = B();
+  ctx.fillStyle = '#111'; ctx.fillRect(0, 0, VW, VH);
+  if (sc && sc.img) cover(ctx, sc.img, sc.img.width, sc.img.height, 1.05, 0, 0);
+  const g = ctx.createLinearGradient(0, 0, 0, VH);
+  g.addColorStop(0, 'rgba(0,0,0,.25)'); g.addColorStop(.45, 'rgba(0,0,0,.05)'); g.addColorStop(1, 'rgba(0,0,0,.55)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, VW, VH);
+  // заголовок — в середине кадра, чтобы не обрезался в сетке профиля (4:5 и 1:1)
+  const text = String(title || '').toUpperCase().trim() || ' ';
+  let fs = 150, lines;
+  do { ctx.font = `900 ${fs}px ${BF()}`; lines = wrap(ctx, text, 860); fs -= 6; } while ((lines.length > 4 || lines.some((l) => ctx.measureText(l).width > 900)) && fs > 60);
+  fs += 6; ctx.font = `900 ${fs}px ${BF()}`;
+  const lh = fs * 1.08, pad = 34;
+  const total = lines.length * lh;
+  let y = VH / 2 - total / 2;
+  lines.forEach((l, i) => {
+    const w = ctx.measureText(l).width + pad * 2;
+    ctx.save(); ctx.translate(VW / 2, y + lh / 2); ctx.rotate((i % 2 ? 1.5 : -1.5) * Math.PI / 180);
+    ctx.fillStyle = i === 0 ? b.hook : b.sticker; ctx.shadowColor = 'rgba(0,0,0,.4)'; ctx.shadowBlur = 30;
+    ctx.beginPath(); ctx.roundRect(-w / 2, -lh / 2 + 4, w, lh - 8, 22); ctx.fill();
+    ctx.shadowColor = 'transparent'; ctx.fillStyle = b.stickerText; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(l, 0, 4);
+    ctx.restore();
+    y += lh;
+  });
+  if (logoImg && B().logo) drawLogo(ctx, 'center', VH / 2 - total / 2 - 190, 360, 130);
+}
+function updateCover() {
+  if (!ad) { $('coverBox').style.display = 'none'; return; }
+  const list = coverScenes();
+  $('coverBox').style.display = list.length ? 'block' : 'none';
+  if (!list.length) return;
+  const sel = $('coverScene'), cur = sel.value;
+  sel.innerHTML = list.map((s, i) => `<option value="${i}">${i + 1}. ${esc((s.caption || s.voice || '').slice(0, 40))}</option>`).join('');
+  const want = cur !== '' ? cur : String(Math.max(0, ad.coverScene ?? 0));
+  sel.value = +want < list.length ? want : '0';
+  if (!$('coverTitle').value && ad.coverTitle === undefined) $('coverTitle').value = (ad.script && ad.script.cover_title) || (ad.scenes[0] && ad.scenes[0].caption) || '';
+  const c = document.createElement('canvas'); c.width = VW; c.height = VH;
+  drawCover(c.getContext('2d'), list[+sel.value], $('coverTitle').value);
+  const pc = $('coverPrev').getContext('2d'); pc.clearRect(0, 0, 270, 480); pc.drawImage(c, 0, 0, 270, 480);
+  // рамка сетки профиля 4:5 — что увидят в ленте профиля
+  pc.strokeStyle = 'rgba(255,255,255,.7)'; pc.setLineDash([6, 5]); pc.lineWidth = 1.5; pc.strokeRect(1, (480 - 337.5) / 2, 268, 337.5); pc.setLineDash([]);
+}
+async function coverBlob() {
+  const list = coverScenes();
+  const c = document.createElement('canvas'); c.width = VW; c.height = VH;
+  await ensureFont();
+  drawCover(c.getContext('2d'), list[+$('coverScene').value] || list[0], $('coverTitle').value);
+  return new Promise((r) => c.toBlob(r, 'image/jpeg', .93));
+}
+$('coverTitle').addEventListener('input', () => { if (ad) { ad.coverTitle = $('coverTitle').value; markDirty(); } updateCover(); });
+$('coverScene').addEventListener('change', () => { if (ad) { ad.coverScene = +$('coverScene').value; markDirty(); } updateCover(); });
+$('coverDl').onclick = async () => {
+  const b = await coverBlob(); const u = URL.createObjectURL(b);
+  const a = document.createElement('a'); a.href = u; a.download = `cover-${(ad && ad.domain) || 'video'}.jpg`; a.click();
+  setTimeout(() => URL.revokeObjectURL(u), 5000);
+};
+$('coverNew').onclick = async () => {
+  if (!ad || !prepare($('coverInfo'))) return;
+  $('coverNew').disabled = true; $('coverInfo').innerHTML = '<span class="spinner"></span>Пишу заголовок…';
+  try {
+    const r = await llmJSON(`Write a new cover title for an Instagram Reels / YouTube Shorts video ad for ${ad.url}. The video opens with: "${ad.scenes[0].voice}". Current cover title: "${$('coverTitle').value}". Make a different one: max 5 words, creates curiosity or promises a clear benefit, language: ${ad.lang}.${needUk() ? ' Also give its Ukrainian translation in "title_uk".' : ''} Return ONLY JSON: {"title": "..."${needUk() ? ', "title_uk": "..."' : ''}}`);
+    if (r.title) { $('coverTitle').value = r.title; ad.coverTitle = r.title; markDirty(); updateCover(); }
+    $('coverInfo').textContent = r.title_uk ? `🇺🇦 ${r.title_uk}` : '';
+  } catch (e) { $('coverInfo').innerHTML = `<span class="err">${esc(niceErr(e))}</span>`; }
+  finally { $('coverNew').disabled = false; }
+};
+
+
+// ---------- Скриншоты приложения из App Store / Google Play ----------
+let storeInfo = null; // { name, icon, description, developer, store, link }
+const isStoreLink = (u) => /(apps|itunes)\.apple\.com\/.*id\d{5,}|play\.google\.com\/store\/apps\/details/i.test(u || '');
+function jsonp(url) {
+  return new Promise((res, rej) => {
+    const cb = '__jp' + Math.random().toString(36).slice(2);
+    const sc = document.createElement('script');
+    const done = (v, e) => { delete window[cb]; sc.remove(); clearTimeout(to); e ? rej(e) : res(v); };
+    const to = setTimeout(() => done(null, new Error('App Store не ответил')), 15000);
+    window[cb] = (d) => done(d);
+    sc.onerror = () => done(null, new Error('App Store недоступен'));
+    sc.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cb;
+    document.head.appendChild(sc);
+  });
+}
+async function fetchStoreInfo(link) {
+  if (typeof SERVER !== 'undefined' && SERVER.online) {
+    const r = await fetch('/api/appshots?url=' + encodeURIComponent(link), { credentials: 'same-origin', signal: AbortSignal.timeout(40000) });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.error || 'не удалось получить скриншоты');
+    return j;
+  }
+  // без сервера: App Store — напрямую (JSONP), Google Play — через сервис-читалку
+  const u = new URL(/^https?:/.test(link) ? link : 'https://' + link);
+  const appleId = (u.pathname.match(/id(\d{5,})/) || [])[1];
+  if (appleId) {
+    const country = (u.pathname.match(/^\/([a-z]{2})\//) || [])[1] || 'us';
+    const d = await jsonp(`https://itunes.apple.com/lookup?id=${appleId}&country=${country}&entity=software`);
+    const r = d && d.results && d.results[0];
+    if (!r) throw new Error('App Store не нашёл это приложение');
+    const big = (s) => s.replace(/\/(\d+)x(\d+)(bb|sr)?\.(png|jpg|jpeg|webp)$/i, (m, w, h) => `/${w * 3}x${h * 3}bb.jpg`);
+    return { store: 'apple', name: r.trackName, icon: r.artworkUrl512 || r.artworkUrl100, description: r.description || '', developer: r.sellerName || '', shots: [...(r.screenshotUrls || []), ...(r.ipadScreenshotUrls || [])].map(big) };
+  }
+  const id = u.searchParams.get('id');
+  if (!id) throw new Error('Это не ссылка на App Store или Google Play');
+  const md = await (await fetch('https://r.jina.ai/https://play.google.com/store/apps/details?id=' + encodeURIComponent(id) + '&hl=en', { signal: AbortSignal.timeout(30000) })).text();
+  const imgs = [...md.matchAll(/!\[([^\]]*)\]\((https:\/\/play-lh\.googleusercontent\.com\/[^)\s]+)\)/g)].map((m) => ({ alt: m[1].toLowerCase(), url: m[2] }));
+  const icon = (imgs.find((x) => /icon/.test(x.alt)) || {}).url || '';
+  const shots = imgs.filter((x) => /screenshot/.test(x.alt)).map((x) => x.url.replace(/=([wsh]\d+[^=\s]*)$/, '=h2400'));
+  return { store: 'google', name: (md.match(/^Title:\s*(.+)$/m) || [])[1] || id, icon, description: md.replace(/!\[[^\]]*\]\([^)]*\)/g, ' ').slice(0, 3000), developer: '', shots };
+}
+const imgSize = (src) => new Promise((res) => { const i = new Image(); i.onload = () => res({ w: i.naturalWidth, h: i.naturalHeight }); i.onerror = () => res(null); i.src = src; setTimeout(() => res(null), 12000); });
+async function takeAppShots(link, silent) {
+  const st = (h) => { if (!silent) $('appStatus').innerHTML = h; };
+  st('<span class="spinner"></span>Забираю скриншоты из магазина…');
+  const info = await fetchStoreInfo(link);
+  if (!info.shots || !info.shots.length) throw new Error('у приложения в магазине нет скриншотов');
+  storeInfo = { name: info.name || '', icon: info.icon || '', description: info.description || '', developer: info.developer || '', store: info.store, link };
+  siteCache[link] = { text: `App name: ${storeInfo.name}. ${storeInfo.developer ? 'Developer: ' + storeInfo.developer + '. ' : ''}App store description: ${storeInfo.description}`.slice(0, 4000), images: info.shots };
+  // убираем прежние скриншоты из магазина, свои загруженные оставляем
+  products = products.filter((p) => !p.store);
+  const fresh = info.shots.slice(0, 10).map((u) => ({ id: pid(), url: u, src: u, own: false, store: true, picked: false }));
+  products = [...products, ...fresh];
+  // выбираем вертикальные — они встанут в рамку телефона без обрезки
+  const sizes = await Promise.all(fresh.map((p) => imgSize(p.src)));
+  let left = Math.max(0, 5 - pickedProducts().length);
+  fresh.forEach((p, i) => { const s = sizes[i]; if (left && s && s.h > s.w * 1.3) { p.picked = true; left--; } });
+  if (left === 5) fresh.slice(0, 4).forEach((p) => (p.picked = true));
+  renderProducts(); renderStoreInfo(); markDirty();
+  const portrait = sizes.filter((s) => s && s.h > s.w * 1.3).length;
+  st(`✅ ${storeInfo.name ? '«' + esc(storeInfo.name) + '»: ' : ''}${fresh.length} скриншотов${portrait < fresh.length ? `, вертикальных ${portrait}` : ''}. Выбраны лучшие для сцен — можно поменять, нажав на фото.`);
+  return info;
+}
+function renderStoreInfo() {
+  const box = $('appInfoBox');
+  if (!storeInfo || !storeInfo.icon) { box.innerHTML = ''; return; }
+  box.innerHTML = `<img src="${esc(storeInfo.icon)}" alt="" class="appicon"><span><b>${esc(storeInfo.name)}</b>${storeInfo.developer ? '<br><small>' + esc(storeInfo.developer) + '</small>' : ''}</span>
+    <button class="ghost" type="button" id="iconLogo">Сделать иконку логотипом</button>`;
+  $('iconLogo').onclick = async () => {
+    $('iconLogo').disabled = true;
+    try {
+      brand.logo = await shrinkImage(await fetchMedia(storeInfo.icon));
+      if (!brand.name && storeInfo.name) brand.name = storeInfo.name.split(/[:—–-]/)[0].trim().slice(0, 30);
+      await loadLogo(); await brandChanged();
+      $('iconLogo').textContent = '✓ Иконка стала логотипом';
+    } catch (e) { $('iconLogo').textContent = 'Не вышло: ' + niceErr(e); $('iconLogo').disabled = false; }
+  };
+}
+$('appShots').onclick = async () => {
+  const link = ($('storeUrl').value || '').trim() || ($('url').value || '').trim();
+  if (!isStoreLink(link)) { $('appStatus').innerHTML = '<span class="err">Вставьте ссылку на приложение в App Store (apps.apple.com/…/id…) или Google Play (play.google.com/store/apps/details?id=…)</span>'; return; }
+  if (!$('storeUrl').value) $('storeUrl').value = link;
+  if (!prepare(document.createElement('div')) && !(typeof SERVER !== 'undefined' && SERVER.online)) {}
+  $('appShots').disabled = true;
+  try { await takeAppShots(link); } catch (e) { $('appStatus').innerHTML = `<span class="err">${esc(niceErr(e))}</span>`; }
+  finally { $('appShots').disabled = false; }
+};
+$('url').addEventListener('change', () => { if (modeKey() === 'app' && isStoreLink($('url').value) && !$('storeUrl').value) $('storeUrl').value = $('url').value.trim(); });
+
+// ---------- Проекты: автосохранение в браузере (IndexedDB) ----------
+var dbP = null, saveTimer = null, restoring = false;
+const SETTINGS = ['mode', 'url', 'lang', 'adFocus', 'audience', 'about', 'adFormat', 'delivery', 'adLen', 'adStyle', 'imgModel', 'animModel', 'useQC', 'useHooks', 'engine', 'pace', 'pitch', 'music', 'useVoice', 'useSubs', 'useSfx', 'buildHooks'];
+function db() {
+  if (dbP) return dbP;
+  dbP = new Promise((res, rej) => {
+    try {
+      const r = indexedDB.open('ad-video-generator', 1);
+      r.onupgradeneeded = () => r.result.createObjectStore('projects', { keyPath: 'id' });
+      r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+    } catch (e) { rej(e); }
+  });
+  dbP.catch(() => { $('projBox').style.display = 'none'; });
+  return dbP;
+}
+async function dbDo(mode, fn) {
+  const d = await db();
+  return new Promise((res, rej) => {
+    const tx = d.transaction('projects', mode), st = tx.objectStore('projects');
+    const r = fn(st);
+    tx.oncomplete = () => res(r && r.result); tx.onerror = () => rej(tx.error);
+  });
+}
+
+function markDirty() {
+  if (restoring || !ad) return;
+  clearTimeout(saveTimer);
+  $('saveState').textContent = 'есть изменения…';
+  saveTimer = setTimeout(saveProject, 1200);
+}
+document.addEventListener('change', (e) => { if (e.target.id && SETTINGS.includes(e.target.id)) markDirty(); });
+
+const packScene = (s) => ({ screenId: s.screenId || null, bgBlob: s.bgBlob || null, qc: s.qc || null, uk: s.uk || null, ukFor: s.ukFor || null, prevText: s.prevText || null, voice: s.voice, caption: s.caption, image: s.image, motion: s.motion, product: !!s.product, own: !!s.own, withProduct: !!s.withProduct,
+  remote: s.remote || null, blob: s.blob || null, imgId: s.imgId || null, clipBlob: s.clipBlob || null, clipKey: s.clipKey || null });
+
+async function saveProject() {
+  if (!ad) return;
+  try {
+    const settings = {};
+    SETTINGS.forEach((id) => { const el = $(id); settings[id] = el.type === 'checkbox' ? el.checked : el.value; });
+    settings.voice = $('voice').value;
+    const first = ad.scenes[0] || {};
+    await dbDo('readwrite', (st) => st.put({
+      id: ad.id, created: ad.created || Date.now(), updated: Date.now(),
+      title: `${ad.domain} — ${first.caption || first.voice || ''}`.slice(0, 90),
+      thumb: first.blob || null, settings,
+      ad: { url: ad.url, domain: ad.domain, lang: ad.lang, script: ad.script, style: ad.style, visualStyle: ad.visualStyle, seed: ad.seed, mode: ad.mode, coverTitle: ad.coverTitle, coverScene: ad.coverScene },
+      scenes: ad.scenes.map(packScene), hooks: ad.hooks.slice(1).map(packScene),
+      products: products.map((p) => ({ id: p.id, url: p.url || null, blob: p.blob || null, own: !!p.own, picked: !!p.picked, store: !!p.store, desc: p.desc || '', label: p.label || '' })),
+      storeInfo: storeInfo || null, storeUrl: $('storeUrl').value || '',
+    }));
+    $('saveState').textContent = '✓ сохранено';
+    listProjects();
+  } catch (e) {
+    $('saveState').textContent = /quota/i.test(String(e)) ? 'нет места для сохранения' : 'не сохранилось';
+  }
+}
+
+const thumbUrls = [];
+async function listProjects() {
+  let all = [];
+  try { all = await dbDo('readonly', (st) => st.getAll()); } catch { return; }
+  all = (all || []).sort((a, b) => b.updated - a.updated);
+  thumbUrls.splice(0).forEach((u) => URL.revokeObjectURL(u));
+  $('projCount').textContent = all.length ? `(${all.length})` : '';
+  const fmt = (t) => new Date(t).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  $('projList').innerHTML = all.length ? all.map((p) => {
+    const u = p.thumb ? URL.createObjectURL(p.thumb) : ''; if (u) thumbUrls.push(u);
+    return `<div class="proj">${u ? `<img src="${u}" alt="">` : '<img alt="">'}
+      <div class="meta"><b>${esc(p.title)}</b><span>${fmt(p.updated)} · ${p.scenes.length} сцен${p.hooks && p.hooks.length ? ' · ' + (p.hooks.length + 1) + ' хука' : ''}</span></div>
+      <button type="button" data-popen="${esc(p.id)}">Открыть</button>
+      <button type="button" data-pdelp="${esc(p.id)}" title="Удалить">🗑</button></div>`;
+  }).join('') : '<div class="hint" style="padding:8px 0">Пока пусто. Проект появится здесь сам, как только вы напишете первый сценарий.</div>';
+}
+
+async function openProject(id) {
+  const p = await dbDo('readonly', (st) => st.get(id));
+  if (!p) return;
+  restoring = true;
+  try {
+    if (ad) allScenes().forEach((s) => { if (s.src) URL.revokeObjectURL(s.src); dropClip(s); });
+    applyMode((p.settings && p.settings.mode) || (p.ad && p.ad.mode) || 'product', { keepDelivery: true });
+    Object.entries(p.settings || {}).forEach(([id, v]) => { const el = $(id); if (!el || id === 'voice' || id === 'mode') return; if (el.type === 'checkbox') el.checked = v; else el.value = v; });
+    $('coverTitle').value = (p.ad && p.ad.coverTitle) || ''; $('coverScene').innerHTML = '';
+    fillVoices(p.settings && p.settings.voice);
+    const unpack = async (s) => {
+      const sc = { screenId: s.screenId || null, qc: s.qc || null, uk: s.uk || null, ukFor: s.ukFor || null, prevText: s.prevText || null, voice: s.voice, caption: s.caption, image: s.image, motion: s.motion, product: s.product, own: s.own, withProduct: s.withProduct, busy: '', err: '' };
+      if (s.blob) {
+        sc.src = URL.createObjectURL(s.blob); sc.blob = s.blob; sc.remote = s.remote; sc.imgId = s.imgId || pid();
+        sc.imgPromise = createImageBitmap(s.blob).then((b) => (sc.img = b));
+        if (s.clipBlob) { try { await loadClip(sc, s.clipBlob, s.clipKey); } catch {} }
+        sc.bgBlob = s.bgBlob || null;
+      }
+      return sc;
+    };
+    const scenes = await Promise.all(p.scenes.map(unpack));
+    const hooks = await Promise.all((p.hooks || []).map(unpack));
+    ad = { id: p.id, created: p.created, ...p.ad, scenes, hooks: [scenes[0], ...hooks], music: null };
+    products.forEach((x) => { if (x.own && x.src) URL.revokeObjectURL(x.src); });
+    products = (p.products || []).map((x) => ({ ...x, src: x.blob ? URL.createObjectURL(x.blob) : x.url }));
+    storeInfo = p.storeInfo || null; $('storeUrl').value = p.storeUrl || '';
+    if (storeInfo && storeInfo.link) siteCache[storeInfo.link] = siteCache[storeInfo.link] || { text: `App name: ${storeInfo.name}. App store description: ${storeInfo.description}`, images: [] };
+    renderStoreInfo();
+    renderProducts(); renderBoard();
+    $('mkVideo').disabled = false; $('vresult').style.display = 'none'; $('vresult').innerHTML = '';
+    $('sstatus').innerHTML = '📁 Проект открыт. Можно править сцены и собирать видео — ничего не нужно генерировать заново.';
+    $('vstatus').textContent = 'Всё готово к сборке.';
+    $('saveState').textContent = '✓ сохранено';
+    updateCosts();
+    $('projBox').open = false;
+  } finally { restoring = false; }
+  if (needUk() && allScenes().some(ukStale) && prepare(document.createElement('div'))) translateAll().then(renderBoard).catch(() => {});
+}
+
+$('projList').addEventListener('click', async (e) => {
+  const o = e.target.closest('[data-popen]');
+  if (o) return openProject(o.dataset.popen);
+  const d = e.target.closest('[data-pdelp]');
+  if (d && confirm('Удалить проект? Это нельзя отменить.')) {
+    await dbDo('readwrite', (st) => st.delete(d.dataset.pdelp));
+    if (ad && ad.id === d.dataset.pdelp) ad.id = pid(); // текущий открытый станет новым проектом при следующем изменении
+    listProjects();
+  }
+});
+$('newProj').onclick = () => {
+  if (ad) allScenes().forEach((s) => { if (s.src) URL.revokeObjectURL(s.src); dropClip(s); });
+  ad = null; products = []; storeInfo = null; $('storeUrl').value = ''; $('appStatus').textContent = 'Скриншоты, иконка, название и описание приложения подтянутся сами.'; renderStoreInfo();
+  ['url', 'adFocus', 'audience', 'about'].forEach((id) => ($(id).value = ''));
+  renderProducts(); renderBoard();
+  $('mkVideo').disabled = true; $('vresult').style.display = 'none'; $('vresult').innerHTML = '';
+  $('sstatus').textContent = ''; $('vstatus').textContent = 'Сначала напишите сценарий и нарисуйте сцены в шаге 2.'; $('saveState').textContent = '';
+  updateCosts(); $('projBox').open = false; $('url').focus();
+};
+listProjects();
+applyMode(store.get('mode') || 'product');
+fillBrandUI(); loadLogo().then(ensureFont).then(drawBrandPreview);
+
+// ---------- Общее ----------
+document.querySelectorAll('.tab').forEach((t) => t.onclick = () => {
+  document.querySelectorAll('.tab').forEach((x) => x.classList.toggle('on', x === t));
+  $('tab-make').style.display = t.dataset.tab === 'make' ? '' : 'none';
+  $('tab-guide').style.display = t.dataset.tab === 'guide' ? 'block' : 'none';
+});
+document.addEventListener('click', (e) => { if (e.target.closest('[data-cover]')) $('coverDl').click(); });
+document.addEventListener('click', async (e) => {
+  const b = e.target.closest('[data-copy]');
+  if (!b) return;
+  try { await navigator.clipboard.writeText(b.dataset.copy); } catch {}
+  const old = b.textContent; b.textContent = 'Скопировано ✓';
+  setTimeout(() => (b.textContent = old), 1200);
+});
+updateCosts();
+
+</script>
+</body>
+</html>
